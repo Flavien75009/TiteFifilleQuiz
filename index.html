@@ -254,6 +254,14 @@ label { display: block; color: var(--gold); font-size: .8rem; font-weight: 700; 
 .fade-up { animation: fadeUp .4s ease both; }
 .pop { animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both; }
 .float-in { animation: floatIn .6s cubic-bezier(.22,1,.36,1) both; }
+.super-intro { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center; background: radial-gradient(ellipse at center, rgba(255,215,0,.15) 0%, transparent 70%), var(--navy2); }
+.super-title { font-family:'Pacifico',cursive; color:var(--gold); font-size:3rem; text-shadow:0 0 40px rgba(255,215,0,.6); margin-bottom:.5rem; }
+.super-subtitle { color:white; font-size:1.2rem; font-weight:700; margin-bottom:2rem; }
+.super-photos { display:flex; align-items:center; gap:2rem; margin-bottom:2rem; }
+.super-photos img { width:130px; height:130px; object-fit:cover; border-radius:50%; border:4px solid var(--gold); box-shadow:0 0 30px rgba(255,215,0,.4); }
+.super-countdown { font-family:'Exo 2',sans-serif; font-size:5rem; font-weight:900; color:var(--gold); text-shadow:0 0 30px rgba(255,215,0,.5); }
+.super-badge { background:linear-gradient(135deg,#FFD700,#FFA500); color:var(--dark); font-family:'Exo 2',sans-serif; font-weight:900; font-size:1rem; padding:.4rem 1.2rem; border-radius:50px; display:inline-block; margin-bottom:.75rem; }
+.hdr-super { background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,165,0,.1)); border-bottom:1px solid rgba(255,215,0,.3); }
 .spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,.15); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
 
 @media (max-width: 640px) {
@@ -414,7 +422,12 @@ function initQs() {
   return qs.slice(0,30);
 }
 function isComplete(q) { return q.text.trim() && q.choices.every(c=>c.trim()); }
-function calcPts(correct, timeLeft) { return correct ? Math.round(400 + (timeLeft/TIMER)*600) : 0; }
+function isSuperQ(idx) { return (idx+1) % 10 === 0; }
+function calcPts(correct, timeLeft, superQ) {
+  if(!correct) return 0;
+  const base = Math.round(400 + (timeLeft/TIMER)*600);
+  return superQ ? base*2 : base;
+}
 function removeListeners() { G.listeners.forEach(r=>r.off()); G.listeners=[]; clearInterval(G.timerIv); }
 
 // ─── LANDING ─────────────────────────────────────────────────────
@@ -674,7 +687,35 @@ function renderHostWaiting() {
 }
 
 // ─── HOST QUESTION ─────────────────────────────────────────────────
-function startQuiz() { removeListeners(); showQuestion(0); }
+function startQuiz() { removeListeners(); launchQuestion(0); }
+
+function launchQuestion(idx) {
+  if(isSuperQ(idx)) { showSuperIntro(idx); }
+  else { showQuestion(idx); }
+}
+
+function showSuperIntro(idx) {
+  db.ref('sessions/'+G.sessionId+'/meta').update({status:'super_intro',currentQuestion:idx});
+  app().innerHTML =
+    '<div class="super-intro">'+
+    '<div class="super-badge">⭐ DOUBLE POINTS ⭐</div>'+
+    '<div class="super-title">SUPER QUESTION</div>'+
+    '<div class="super-subtitle">Question '+(idx+1)+' — Les points sont DOUBLÉS !</div>'+
+    '<div class="super-photos">'+
+    '<img src="'+PHOTO_CORRECT+'" alt="Cacou">'+
+    '<div class="super-countdown" id="sCountdown">3</div>'+
+    '<img src="'+PHOTO_WRONG+'" alt="Pedro">'+
+    '</div>'+
+    '<div style="color:rgba(255,255,255,.5);font-size:.9rem">Préparez-vous !</div>'+
+    '</div>';
+  let n=3;
+  const iv=setInterval(()=>{
+    n--;
+    const el=document.getElementById('sCountdown');
+    if(el) el.textContent=n>0?n:'GO !';
+    if(n<=0){clearInterval(iv);showQuestion(idx);}
+  },1000);
+}
 
 async function showQuestion(idx) {
   removeListeners(); G.hasVoted=false;
@@ -720,11 +761,12 @@ async function showQuestion(idx) {
     answerHtml = photoHtml + '<div class="q-text-host">'+q.text+'</div>' + choicesHtml;
   }
 
+  const superQ = isSuperQ(idx);
   app().innerHTML=`
   <div class="q-screen">
-    <div class="hdr">
-      <span class="hdr-logo">Tite Fifille Quiz</span>
-      <span style="color:white;font-weight:900;font-size:1.1rem">Q.${idx+1} / 30</span>
+    <div class="hdr ${superQ?'hdr-super':''}">
+      <span class="hdr-logo">${superQ?'⭐ SUPER QUESTION ⭐':'Tite Fifille Quiz'}</span>
+      <span style="color:${superQ?'var(--gold)':'white'};font-weight:900;font-size:1.1rem">Q.${idx+1} / 30${superQ?' — x2 pts':''}</span>
       <div id="timerBadge" class="timer-badge">${TIMER}s</div>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:100%"></div></div>
@@ -767,7 +809,7 @@ async function closeVotes(idx) {
     const ch=typeof vd==='object'?vd.choice:vd;
     const tl=typeof vd==='object'?vd.time:0;
     if(ch>=0&&ch<=3) counts[ch]++;
-    const pts=calcPts(ch===q.correct,tl);
+    const pts=calcPts(ch===q.correct,tl,isSuperQ(idx));
     const cur=(parts[pid]&&parts[pid].score)||0;
     updates['sessions/'+G.sessionId+'/participants/'+pid+'/score']=cur+pts;
     updates['sessions/'+G.sessionId+'/participants/'+pid+'/lastPts']=pts;
@@ -804,7 +846,7 @@ async function closeVotes(idx) {
       <div style="margin-top:2rem">
         ${(idx+1)%10===0
           ?`<button class="btn btn-gold btn-big" onclick="showLeaderboard(${idx})">🏆 Voir le classement</button>`
-          :`<button class="btn btn-pink btn-big" onclick="showQuestion(${idx+1})">Question suivante →</button>`
+          :`<button class="btn btn-pink btn-big" onclick="launchQuestion(${idx+1})">Question suivante →</button>`
         }
       </div>
     </div>
@@ -839,7 +881,7 @@ async function showLeaderboard(idx) {
         <div style="text-align:center;margin-top:2rem">
           ${isFinal
             ?`<button class="btn btn-ghost" onclick="endSession()">✓ Terminer la session</button>`
-            :`<button class="btn btn-gold btn-big" onclick="showQuestion(${idx+1})">Continuer →</button>`
+            :`<button class="btn btn-gold btn-big" onclick="launchQuestion(${idx+1})">Continuer →</button>`
           }
         </div>
       </div>
@@ -853,6 +895,28 @@ async function endSession() {
 }
 
 // ─── PARTICIPANT ───────────────────────────────────────────────────
+function showPSuperIntro(idx) {
+  app().innerHTML =
+    '<div class="super-intro">'+
+    '<div class="super-badge">⭐ DOUBLE POINTS ⭐</div>'+
+    '<div class="super-title">SUPER QUESTION !</div>'+
+    '<div class="super-subtitle">Question '+(idx+1)+' — Points doublés !</div>'+
+    '<div class="super-photos">'+
+    '<img src="'+PHOTO_CORRECT+'" alt="">'+
+    '<div style="font-family:Pacifico,cursive;font-size:2rem;color:var(--gold)">x2</div>'+
+    '<img src="'+PHOTO_WRONG+'" alt="">'+
+    '</div>'+
+    '<div style="color:rgba(255,255,255,.5)" class="pulse">Préparez-vous...</div>'+
+    '</div>';
+  // Re-listen for question start
+  const mRef=db.ref('sessions/'+G.sessionId+'/meta');
+  G.listeners.push(mRef);
+  mRef.on('value',snap=>{
+    const m=snap.val(); if(!m) return;
+    if(m.status==='question'){removeListeners();renderPQuestion(m.currentQuestion,m.questionStartTime);}
+  });
+}
+
 function renderJoin() {
   app().innerHTML=`
   <div class="join-page">
@@ -898,7 +962,8 @@ function renderPWaiting() {
   G.listeners.push(mRef);
   mRef.on('value',snap=>{
     const m=snap.val(); if(!m) return;
-    if(m.status==='question'){removeListeners();renderPQuestion(m.currentQuestion,m.questionStartTime);}
+    if(m.status==='super_intro'){showPSuperIntro(m.currentQuestion);}
+    else if(m.status==='question'){removeListeners();renderPQuestion(m.currentQuestion,m.questionStartTime);}
     else if(m.status==='leaderboard'){renderPLeaderboard(m.leaderboard||[]);}
   });
 
@@ -995,11 +1060,15 @@ async function renderPResult(idx, q) {
   const pSnap=await db.ref('sessions/'+G.sessionId+'/participants/'+PID).once('value');
   const pd=pSnap.val()||{}; G.pScore=pd.score||0;
   const pts=pd.lastPts||0;
+  const prevScore = G.pScore; // before update
   const ok=G.hasVoted&&G.myVote===q.correct;
   const feedbackPhoto = (!G.hasVoted||!ok) ? PHOTO_WRONG : PHOTO_CORRECT;
   const feedbackMsg   = !G.hasVoted ? 'Trop lent... !' : ok ? 'Cacou est fiere de vous ! !' : 'Ahahah vous ne connaissez pas Pedro ! !';
 
-  const ptsHtml = pts>0 ? '<div class="result-pts pop">+'+pts+' pts</div>' : '';
+  const superQ = isSuperQ(idx);
+  const ptsHtml = pts>0
+    ? '<div class="result-pts pop">'+(superQ?'⭐ ':'')+'+'+pts+' pts'+(superQ?' (x2)':'')+'</div>'
+    : '<div style="color:rgba(255,255,255,.4);font-size:1.1rem;margin:.5rem 0">+0 pts</div>';
   const borderColor = ok ? '#1DA85C' : '#E8412A';
 
   app().innerHTML =
@@ -1009,7 +1078,8 @@ async function renderPResult(idx, q) {
     '<img src="'+feedbackPhoto+'" class="pop" style="width:160px;height:160px;object-fit:cover;border-radius:50%;border:4px solid '+borderColor+';margin-bottom:.75rem;box-shadow:0 4px 24px rgba(0,0,0,.5)">' +
     '<div class="result-verdict">'+feedbackMsg+'</div>' +
     ptsHtml +
-    '<div class="result-total">Total : '+G.pScore.toLocaleString()+' pts</div>' +
+    '<div class="result-total" style="font-size:1.1rem;font-weight:800;color:white">Total : '+G.pScore.toLocaleString()+' pts</div>' +
+    '<div style="color:rgba(255,255,255,.35);font-size:.8rem;margin-top:.25rem">Score avant : '+prevScore.toLocaleString()+' pts</div>' +
     '<div style="color:rgba(255,255,255,.3);margin-top:1.5rem;font-size:.9rem" class="pulse">En attente de la prochaine question...</div>' +
     '</div></div>';
 
