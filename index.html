@@ -1014,7 +1014,7 @@ async function showMiniLeaderboard(idx) {
   // Gold podium: block tops at y=105,165,188 in 315px SVG
   // top% = (y - 32) / 315 * 100
   const goodPodium =
-    '<div style="position:relative;width:100%;border-radius:8px;overflow:hidden">'+
+    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
     '<div style="position:absolute;left:21.2%;top:'+((165-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
     '<div style="position:absolute;left:50%;top:'+((105-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
@@ -1023,7 +1023,7 @@ async function showMiniLeaderboard(idx) {
 
   // Stone podium: block tops at y=78,178,212 in 424px SVG
   const badPodium =
-    '<div style="position:relative;width:100%;border-radius:8px;overflow:hidden;margin-top:.4rem">'+
+    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden;margin-top:.3rem">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
     '<div style="position:absolute;left:18.9%;top:'+((178-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
     '<div style="position:absolute;left:50%;top:'+((78-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
@@ -1035,10 +1035,10 @@ async function showMiniLeaderboard(idx) {
   let lbRows = '';
   sorted.forEach((p,i)=>{
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
+      ? '<img src="'+p.photo+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
       : '<span style="font-size:.75rem">'+p.emoji+'</span>';
     lbRows +=
-      '<div style="display:flex;align-items:center;gap:.35rem;padding:.28rem .4rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
+      '<div style="display:flex;align-items:center;gap:.35rem;padding:.18rem .35rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
       '<span style="font-size:'+(i<3?'.75rem':'.65rem')+';min-width:18px;text-align:center">'+(i<3?medals[i]:(i+1)+'.')+'</span>'+
       ph+
       '<span style="color:white;font-size:.7rem;font-weight:'+(i<3?'700':'500')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span>'+
@@ -1051,18 +1051,18 @@ async function showMiniLeaderboard(idx) {
     '<div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span>'+
     '<span style="color:var(--gold);font-weight:900">&#127942; Podiums — Q.'+(idx+1)+'</span>'+
     '<span></span></div>'+
-    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:.75rem;overflow:hidden">'+
+    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:.5rem;overflow:hidden">'+
     // Colonne gauche: 2 podiums
-    '<div style="display:flex;flex-direction:column;gap:.25rem;overflow:hidden">'+
-    '<div style="color:#FFD700;font-size:.65rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
+    '<div style="display:flex;flex-direction:column;gap:.15rem;overflow:hidden;align-items:center">'+
+    '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
-    '<div style="color:#CD853F;font-size:.65rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
+    '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
     badPodium+
     '</div>'+
     // Colonne droite: classement scrollable 40 lignes
     '<div style="display:flex;flex-direction:column;overflow:hidden">'+
-    '<div style="color:#FFD700;font-size:.65rem;font-weight:700;text-align:center;margin-bottom:.3rem">&#128202; Classement ('+sorted.length+')</div>'+
-    '<div style="flex:1;overflow-y:auto;background:rgba(255,255,255,.03);border-radius:8px;padding:.35rem">'+
+    '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center;margin-bottom:.2rem">&#128202; Classement ('+sorted.length+')</div>'+
+    '<div style="flex:1;overflow-y:auto;background:rgba(255,255,255,.03);border-radius:8px;padding:.2rem">'+
     lbRows+
     '</div>'+
     '</div>'+
@@ -1100,7 +1100,7 @@ async function showLeaderboard(idx) {
   }
 
   const goodPodium =
-    '<div style="position:relative;width:100%;border-radius:8px;overflow:hidden">'+
+    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
     '<div style="position:absolute;left:21.2%;top:'+((165-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
     '<div style="position:absolute;left:50%;top:'+((105-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
@@ -1108,7 +1108,7 @@ async function showLeaderboard(idx) {
     '</div>';
 
   const badPodium = sorted.length>=3
-    ? '<div style="position:relative;width:100%;border-radius:8px;overflow:hidden;margin-top:.4rem">'+
+    ? '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden;margin-top:.3rem">'+
       '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
       '<div style="position:absolute;left:18.9%;top:'+((178-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
       '<div style="position:absolute;left:50%;top:'+((78-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
@@ -1120,10 +1120,10 @@ async function showLeaderboard(idx) {
   let lbRows = '';
   sorted.forEach((p,i)=>{
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
+      ? '<img src="'+p.photo+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
       : '<span style="font-size:.75rem">'+p.emoji+'</span>';
     lbRows +=
-      '<div style="display:flex;align-items:center;gap:.35rem;padding:.28rem .4rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
+      '<div style="display:flex;align-items:center;gap:.35rem;padding:.18rem .35rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
       '<span style="font-size:'+(i<3?'.75rem':'.65rem')+';min-width:18px;text-align:center">'+(i<3?medals[i]:(i+1)+'.')+'</span>'+
       ph+
       '<span style="color:white;font-size:.7rem;font-weight:'+(i<3?'700':'500')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span>'+
@@ -1142,16 +1142,16 @@ async function showLeaderboard(idx) {
     '<div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span>'+
     '<span style="color:var(--gold);font-weight:900">'+(isFinal?'&#127942; CLASSEMENT FINAL':'&#127942; Classement Q.'+(idx+1))+'</span>'+
     '<span></span></div>'+
-    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:.75rem;overflow:hidden">'+
-    '<div style="display:flex;flex-direction:column;gap:.25rem;overflow:hidden">'+
-    '<div style="color:#FFD700;font-size:.65rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
+    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:.5rem;overflow:hidden">'+
+    '<div style="display:flex;flex-direction:column;gap:.15rem;overflow:hidden;align-items:center">'+
+    '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
-    '<div style="color:#CD853F;font-size:.65rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
+    '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
     badPodium+
     '</div>'+
     '<div style="display:flex;flex-direction:column;overflow:hidden">'+
     '<div style="color:#FFD700;font-size:.65rem;font-weight:700;text-align:center;margin-bottom:.3rem">&#128202; Classement complet ('+sorted.length+')</div>'+
-    '<div style="flex:1;overflow-y:auto;background:rgba(255,255,255,.03);border-radius:8px;padding:.35rem">'+
+    '<div style="flex:1;overflow-y:auto;background:rgba(255,255,255,.03);border-radius:8px;padding:.2rem">'+
     lbRows+
     '</div>'+
     '</div>'+
