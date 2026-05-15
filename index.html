@@ -751,11 +751,11 @@ function showSuperIntro(idx) {
     '</div>'+
     '<div style="color:rgba(255,255,255,.5);font-size:.9rem">Préparez-vous !</div>'+
     '</div>';
-  let n=3;
+  let n=10;
   const iv=setInterval(()=>{
     n--;
     const el=document.getElementById('sCountdown');
-    if(el) el.textContent=n>0?n:'GO !';
+    if(el){ el.textContent=n>0?n:'GO !'; el.style.color=n<=3?'#E8412A':'var(--gold)'; }
     if(n<=0){clearInterval(iv);showQuestion(idx);}
   },1000);
 }
@@ -861,58 +861,50 @@ async function closeVotes(idx) {
   const pSnap2=await db.ref('sessions/'+G.sessionId+'/participants').once('value');
   G.participants=pSnap2.val()||{};
   const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
+  const BG=['#E8412A','#2980E8','#F0A500','#1DA85C'];
 
-  app().innerHTML=`
-  <div class="q-screen">
-    <div class="hdr">
-      <span class="hdr-logo">Tite Fifille Quiz</span>
-      <span style="color:white;font-weight:900">Q.${idx+1} / 30 — Résultats</span>
-      <span style="color:rgba(255,255,255,.4)">${Object.keys(votes).length} votes</span>
-    </div>
-    <div class="q-body">
-      ${q.photo?`<img src="${q.photo}" class="q-photo-host" style="max-height:180px" alt="">`:''}      <div class="q-text-host" style="font-size:1.2rem;margin-bottom:1.25rem">${q.text}</div>
-      <div class="results-wrap">
-        ${q.choices.map((c,i)=>{
-          const pct=Math.round(counts[i]/total*100);
-          const ok=i===q.correct;
-          return `<div class="result-row">
-            <div class="result-letter" style="background:${COLORS[i]}">${LABELS[i]}</div>
-            <div class="result-track">
-              <div class="result-bar" style="width:${pct}%;background:${ok?'var(--D)':COLORS[i]}">
-                ${pct>12?c:''}
-              </div>
-            </div>
-            <div class="result-n">${counts[i]}</div>
-            ${ok?'<span class="correct-tag">✓</span>':''}          </div>`;
-        }).join('')}
-      </div>
-      <div style="margin-top:2rem">
-        ${(idx+1)%10===0
-          ?`<button class="btn btn-gold btn-big" onclick="showLeaderboard(${idx})">🏆 Voir le classement</button>`
-          :`<button class="btn btn-pink btn-big" onclick="launchQuestion(${idx+1})">Question suivante →</button>`
-        }
-      </div>
-    </div>
-  </div>`;
-}  const BG_COLORS=['#E8412A','#2980E8','#F0A500','#1DA85C'];
-  let resHtml = '<div class="results-wrap">';
+  // Build results rows
+  let resHtml='<div class="results-wrap">';
   q.choices.forEach((c,i)=>{
     const pct=Math.round(counts[i]/total*100);
     const ok=i===q.correct;
     const cp=(q.choicePhotos||[])[i];
-    resHtml += '<div class="result-row">';
-    resHtml += '<div class="result-letter" style="background:'+BG_COLORS[i]+'">'+LABELS[i]+'</div>';
-    if(cp) resHtml += '<img src="'+cp+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;background:rgba(0,0,0,.3)">';
-    resHtml += '<div class="result-track">';
-    resHtml += '<div class="result-bar" style="width:'+pct+'%;background:'+(ok?'#1DA85C':BG_COLORS[i])+'">'+(pct>15?(cp?'':c):'')+'</div>';
-    resHtml += '</div>';
-    resHtml += '<div class="result-n">'+counts[i]+'</div>';
-    if(ok) resHtml += '<span class="correct-tag">✓</span>';
-    resHtml += '</div>';
+    resHtml+='<div class="result-row">';
+    resHtml+='<div class="result-letter" style="background:'+BG[i]+'">'+LABELS[i]+'</div>';
+    if(cp) resHtml+='<img src="'+cp+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;background:rgba(0,0,0,.3)">';
+    resHtml+='<div class="result-track"><div class="result-bar" style="width:'+pct+'%;background:'+(ok?'#1DA85C':BG[i])+'">'+(pct>15?(cp?'':c):'')+'</div></div>';
+    resHtml+='<div class="result-n">'+counts[i]+'</div>';
+    if(ok) resHtml+='<span class="correct-tag">&#10003;</span>';
+    resHtml+='</div>';
   });
-  resHtml += '</div>';
+  resHtml+='</div>';
 
+  // Build photo row if question has illustration photos
+  let photoHtml='';
+  if(q.photos&&q.photos.length&&!(q.choicePhotos||[]).filter(Boolean).length===4){
+    photoHtml='<div class="photos-row" style="max-height:140px">'+q.photos.map(p=>'<img src="'+p+'" style="flex:1;min-width:0;max-height:135px;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.3)">').join('')+'</div>';
+  }
 
+  const nextBtn=(idx+1)%10===0
+    ? '<button class="btn btn-gold btn-big" onclick="showLeaderboard('+idx+')">&#127942; Voir le classement</button>'
+    : '<button class="btn btn-ghost" style="font-size:.9rem" onclick="showMiniLeaderboard('+idx+')">&#128202; Mini classement</button>'+
+      '<button class="btn btn-pink btn-big" onclick="launchQuestion('+(idx+1)+')">Question suivante &#8594;</button>';
+
+  app().innerHTML=
+    '<div class="q-screen">'+
+    '<div class="hdr">'+
+    '<span class="hdr-logo">Tite Fifille Quiz</span>'+
+    '<span style="color:white;font-weight:900">Q.'+(idx+1)+' / 30 &#8212; R&#233;sultats</span>'+
+    '<span style="color:rgba(255,255,255,.4)">'+Object.keys(votes).length+' votes</span>'+
+    '</div>'+
+    '<div class="q-body">'+
+    photoHtml+
+    '<div class="q-text-host" style="font-size:1.2rem;margin-bottom:1rem">'+q.text+'</div>'+
+    resHtml+
+    '<div style="margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center">'+
+    nextBtn+
+    '</div></div></div>';
+}
 
 async function showMiniLeaderboard(idx) {
   const pSnap=await db.ref('sessions/'+G.sessionId+'/participants').once('value');
@@ -946,38 +938,101 @@ async function showMiniLeaderboard(idx) {
 async function showLeaderboard(idx) {
   const pSnap=await db.ref('sessions/'+G.sessionId+'/participants').once('value');
   G.participants=pSnap.val()||{};
-  const sorted=Object.entries(G.participants).map(([id,p])=>({name:p.name,score:p.score||0,emoji:p.emoji||'🎀',photo:p.photo||null})).sort((a,b)=>b.score-a.score);
+  const sorted=Object.entries(G.participants)
+    .map(([id,p])=>({name:p.name,score:p.score||0,emoji:p.emoji||'&#127928;',photo:p.photo||null}))
+    .sort((a,b)=>b.score-a.score);
   const isFinal=idx===29;
-  await db.ref('sessions/'+G.sessionId+'/meta').update({status:'leaderboard',leaderboard:sorted.slice(0,10).map(p=>({name:p.name,score:p.score}))});
-  const medals=['🥇','🥈','🥉']; const classes=['gold','silver','bronze'];
+  await db.ref('sessions/'+G.sessionId+'/meta').update({
+    status:'leaderboard',
+    leaderboard:sorted.slice(0,10).map(p=>({name:p.name,score:p.score,emoji:p.emoji,photo:p.photo||null}))
+  });
 
-  app().innerHTML=`
-  <div style="min-height:100vh;display:flex;flex-direction:column">
-    <div class="hdr">
-      <span class="hdr-logo">Tite Fifille Quiz</span>
-      <span style="color:var(--gold);font-weight:900">${isFinal?'🏆 CLASSEMENT FINAL':'🏆 Classement Q'+(idx+1)}</span>
-      <span></span>
-    </div>
-    <div class="body-center">
-      <div class="lb-wrap fade-up">
-        <div class="lb-title">${isFinal?'🎉 CLASSEMENT FINAL 🎉':'Top après '+(idx+1)+' questions'}</div>
-        ${sorted.slice(0,10).map((p,i)=>`
-          <div class="lb-row ${classes[i]||''}" style="animation:fadeUp .3s ${i*60}ms both">
-            <div class="lb-rank">${i<3?medals[i]:(i+1)+'.'}</div>
-            ${p.photo?`<img src='${p.photo}' style='width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid var(--gold);flex-shrink:0'>`:"<span style='font-size:1.3rem'>"+p.emoji+"</span>"}
-            <div class="lb-name">${p.name}</div>
-            <div class="lb-score">${p.score.toLocaleString()} pts</div>
-          </div>`).join('')}
-        ${sorted.length===0?'<div style="color:rgba(255,255,255,.3);text-align:center">Aucun participant</div>':''}
-        <div style="text-align:center;margin-top:2rem">
-          ${isFinal
-            ?`<button class="btn btn-ghost" onclick="endSession()">✓ Terminer la session</button>`
-            :`<button class="btn btn-gold btn-big" onclick="launchQuestion(${idx+1})">Continuer →</button>`
-          }
-        </div>
-      </div>
-    </div>
-  </div>`;
+  // Build podium top 3
+  function avatarHtml(p, size) {
+    const s=size+'px';
+    if(p&&p.photo) return '<img src="'+p.photo+'" style="width:'+s+';height:'+s+';object-fit:cover;border-radius:50%;border:3px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.5)">';
+    return '<div style="width:'+s+';height:'+s+';border-radius:50%;background:rgba(255,215,0,.2);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:'+(size/2.2)+'px">'+(p?p.emoji:'?')+'</div>';
+  }
+
+  const p1=sorted[0]||null, p2=sorted[1]||null, p3=sorted[2]||null;
+  const podiumHtml=
+    '<div style="display:flex;align-items:flex-end;justify-content:center;gap:.5rem;margin-bottom:1.5rem;width:100%;max-width:600px">'+
+    // 2nd place
+    '<div style="display:flex;flex-direction:column;align-items:center;flex:1">'+
+    (p2?avatarHtml(p2,60):'')+
+    '<div style="color:white;font-weight:700;font-size:.85rem;margin:.3rem 0;text-align:center;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(p2?p2.name:'')+'</div>'+
+    '<div style="background:linear-gradient(180deg,#C0C0C0,#909090);border-radius:10px 10px 0 0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:.5rem;min-height:80px">'+
+    '<div style="font-family:Pacifico,cursive;font-size:2rem;color:white">2</div>'+
+    '<div style="color:rgba(255,255,255,.8);font-size:.75rem;font-weight:700">'+(p2?p2.score.toLocaleString()+' pts':'')+'</div>'+
+    '</div></div>'+
+    // 1st place
+    '<div style="display:flex;flex-direction:column;align-items:center;flex:1">'+
+    (p1?avatarHtml(p1,80):'')+
+    '<div style="color:var(--gold);font-weight:800;font-size:.9rem;margin:.3rem 0;text-align:center;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(p1?p1.name:'')+'</div>'+
+    '<div style="background:linear-gradient(180deg,#FFD700,#FFA500);border-radius:10px 10px 0 0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:.75rem;min-height:120px;box-shadow:0 0 30px rgba(255,215,0,.4)">'+
+    '<div style="font-family:Pacifico,cursive;font-size:3rem;color:white;text-shadow:0 2px 8px rgba(0,0,0,.3)">1</div>'+
+    '<div style="color:rgba(0,0,0,.7);font-size:.8rem;font-weight:900">'+(p1?p1.score.toLocaleString()+' pts':'')+'</div>'+
+    '</div></div>'+
+    // 3rd place
+    '<div style="display:flex;flex-direction:column;align-items:center;flex:1">'+
+    (p3?avatarHtml(p3,55):'')+
+    '<div style="color:white;font-weight:700;font-size:.8rem;margin:.3rem 0;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(p3?p3.name:'')+'</div>'+
+    '<div style="background:linear-gradient(180deg,#CD7F32,#8B4513);border-radius:10px 10px 0 0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:.4rem;min-height:60px">'+
+    '<div style="font-family:Pacifico,cursive;font-size:1.8rem;color:white">3</div>'+
+    '<div style="color:rgba(255,255,255,.8);font-size:.7rem;font-weight:700">'+(p3?p3.score.toLocaleString()+' pts':'')+'</div>'+
+    '</div></div>'+
+    '</div>';
+
+  // Worst players podium (bottom 3)
+  const worst=[...sorted].reverse().slice(0,3);
+  let worstHtml='';
+  if(isFinal && sorted.length>=4){
+    const wTitles=["Roi des Erreurs","Maitre de l'Inefficacite","Specialiste du Ca Passe"];
+    worstHtml=
+      '<div style="margin-top:1.5rem;width:100%;max-width:600px">'+
+      '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1rem">'+
+      '<div style="font-family:Pacifico,cursive;color:rgba(255,255,255,.4);font-size:1rem;text-align:center;margin-bottom:.75rem">&#128293; Podium des Plus Mauvais &#128293;</div>'+
+      '<div style="display:flex;gap:.5rem;justify-content:center">'+
+      worst.slice(0,3).map((p,i)=>{
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1">'+
+          avatarHtml(p,44)+
+          '<div style="color:rgba(255,255,255,.5);font-size:.65rem;font-weight:700;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</div>'+
+          '<div style="color:rgba(255,255,255,.3);font-size:.6rem;text-align:center">'+wTitles[i]+'</div>'+
+          '</div>';
+      }).join('')+
+      '</div></div></div>';
+  }
+
+  // Rest of leaderboard
+  let restHtml='';
+  sorted.slice(3,10).forEach((p,i)=>{
+    restHtml+=
+      '<div class="lb-row" style="margin-bottom:.3rem">'+
+      '<div class="lb-rank">'+(i+4)+'.</div>'+
+      avatarHtml(p,32)+
+      '<div class="lb-name">'+p.name+'</div>'+
+      '<div class="lb-score">'+p.score.toLocaleString()+' pts</div>'+
+      '</div>';
+  });
+
+  const actionBtn=isFinal
+    ? '<button class="btn btn-ghost" onclick="endSession()">&#10003; Terminer la session</button>'
+    : '<button class="btn btn-gold btn-big" onclick="launchQuestion('+(idx+1)+')">Continuer &#8594;</button>';
+
+  app().innerHTML=
+    '<div style="min-height:100vh;display:flex;flex-direction:column">'+
+    '<div class="hdr">'+
+    '<span class="hdr-logo">Tite Fifille Quiz</span>'+
+    '<span style="color:var(--gold);font-weight:900">'+(isFinal?'&#127942; CLASSEMENT FINAL':'&#127942; Classement Q.'+(idx+1))+'</span>'+
+    '<span></span></div>'+
+    '<div class="body-center">'+
+    '<div class="lb-wrap fade-up" style="display:flex;flex-direction:column;align-items:center">'+
+    '<div class="lb-title">'+(isFinal?'&#127881; CLASSEMENT FINAL &#127881;':'Top apres '+(idx+1)+' questions')+'</div>'+
+    podiumHtml+
+    (restHtml?'<div style="width:100%;margin-top:.5rem">'+restHtml+'</div>':'')+
+    worstHtml+
+    '<div style="margin-top:1.5rem">'+actionBtn+'</div>'+
+    '</div></div></div>';
 }
 
 async function endSession() {
