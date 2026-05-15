@@ -154,11 +154,19 @@ label { display: block; color: var(--gold); font-size: .8rem; font-weight: 700; 
 .progress-bar { height: 5px; background: rgba(255,255,255,.1); }
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--gold)); transition: width 1s linear; }
 .q-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
-.q-photo-host { width: 100%; max-width: 820px; max-height: 280px; object-fit: cover; border-radius: 16px; margin-bottom: 1rem; box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 0 3px rgba(255,215,0,.2); }
+.q-photo-host { max-height: 250px; width:100%; object-fit: contain; border-radius: 14px; background: rgba(0,0,0,.3); }
+.photos-row { display:flex; gap:.6rem; width:100%; max-width:820px; justify-content:center; align-items:center; margin-bottom:1rem; }
+.photos-row img { flex:1; min-width:0; max-height:250px; object-fit:contain; border-radius:12px; background:rgba(0,0,0,.3); }
 .q-text-host { color: white; font-family: 'Nunito', sans-serif; font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; line-height: 1.3; max-width: 820px; }
 .answers-host { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; width: 100%; max-width: 820px; }
 .ans-host { padding: .9rem 1.2rem; border-radius: 14px; display: flex; align-items: center; gap: .75rem; color: white; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; }
 .ans-A { background: var(--A); } .ans-B { background: var(--B); } .ans-C { background: var(--C); } .ans-D { background: var(--D); }
+.ans-photo { flex-direction:column; padding:.5rem; align-items:center; justify-content:flex-start; min-height:140px; }
+.ans-photo img { width:100%; height:100px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,.25); }
+.ans-photo .ans-label { font-size:.85rem; margin-top:.3rem; text-align:center; }
+.p-btn-photo { flex-direction:column; min-height:110px; padding:.5rem; }
+.p-btn-photo img { width:100%; height:70px; object-fit:contain; border-radius:8px; background:rgba(0,0,0,.2); }
+.p-btn-photo .p-label { font-size:.8rem; margin-top:.25rem; text-align:center; line-height:1.2; }
 .ans-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
 .vote-ticker { color: rgba(255,255,255,.5); text-align: center; margin-top: .75rem; font-size: .9rem; }
 .timer-badge { background: rgba(0,0,0,.4); border: 2px solid rgba(255,215,0,.4); border-radius: 50px; padding: .3rem .9rem; font-family: 'Nunito', sans-serif; font-weight: 900; color: var(--gold); font-size: 1.3rem; transition: color .3s; }
@@ -383,7 +391,7 @@ function loadQs() { try { return JSON.parse(localStorage.getItem('bq_questions')
 function saveQs(qs) { localStorage.setItem('bq_questions', JSON.stringify(qs)); }
 function initQs() {
   const qs=loadQs();
-  while(qs.length<30) qs.push({text:'',photo:null,choices:['','','',''],correct:0});
+  while(qs.length<30) qs.push({text:'',photos:[],choices:['','','',''],choicePhotos:[null,null,null,null],correct:0});
   return qs.slice(0,30);
 }
 function isComplete(q) { return q.text.trim() && q.choices.every(c=>c.trim()); }
@@ -457,27 +465,49 @@ function renderEditor(idx) {
         <div class="e-card fade-up">
           <h3>Question ${idx+1} / 30</h3>
           <div class="form-row">
-            <label>📸 Photo</label>
-            <div class="photo-drop" onclick="$('photoIn').click()">
-              ${q.photo?`<img src="${q.photo}" alt="">`:
-              `<div>📁 Cliquez pour ajouter une photo<br><small style="opacity:.5">JPG / PNG — compressé automatiquement</small></div>`}
+            <label>📸 Photos (une ou plusieurs — photo entière visible)</label>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+              ${(q.photos||[]).map((p,pi)=>`
+                <div style='position:relative;display:inline-block'>
+                  <img src='${p}' style='height:80px;border-radius:8px;object-fit:contain;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)'>
+                  <button onclick='removePhoto(${idx},${pi})' style='position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:white;font-size:.7rem;cursor:pointer'>✕</button>
+                </div>`).join('')}
             </div>
-            <input id="photoIn" type="file" accept="image/*" style="display:none" onchange="onPhoto(event,${idx})">
+            <div class="photo-drop" onclick="$('photoIn').click()">
+              ${(q.photos||[]).length>0
+                ? `<small style='opacity:.5'>+ Ajouter une autre photo</small>`
+                : `<div>📁 Cliquez pour ajouter une ou plusieurs photos<br><small style='opacity:.5'>La photo sera affichée entière, sans recadrage</small></div>`}
+            </div>
+            <input id="photoIn" type="file" accept="image/*" multiple style="display:none" onchange="onPhoto(event,${idx})">
           </div>
           <div class="form-row">
             <label>❓ Question</label>
             <textarea id="qTxt" rows="2" placeholder="Entrez votre question...">${q.text}</textarea>
           </div>
           <div class="form-row">
-            <label>🎯 Réponses — cochez la bonne réponse ✓</label>
+            <label>🎯 Réponses — texte et/ou photo — cochez la bonne ✓</label>
             <div class="choices-grid">
-              ${LABELS.map((l,i)=>`
-                <div class="choice-row">
-                  <div class="choice-badge" style="background:${COLORS[i]}">${l}</div>
-                  <input type="text" id="c${i}" placeholder="Réponse ${l}…" value="${q.choices[i]||''}" >
-                  <input type="radio" class="choice-radio" name="cor" value="${i}" ${q.correct===i?'checked':''} onchange="G.hostQs[${idx}].correct=${i}">
-                </div>`).join('')}
+              ${LABELS.map((l,i)=>{
+                const cp=(q.choicePhotos||[])[i];
+                return `<div style='background:rgba(0,0,0,.2);border-radius:12px;padding:.6rem;border:1px solid rgba(255,255,255,.1)'>
+                  <div style='display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem'>
+                    <div class='choice-badge' style='background:${COLORS[i]}'>${l}</div>
+                    <input type='text' id='c${i}' placeholder='Texte (optionnel si photo)' value='${q.choices[i]||''}' style='flex:1'>
+                    <input type='radio' class='choice-radio' name='cor' value='${i}' ${q.correct===i?'checked':''} onchange='G.hostQs[${idx}].correct=${i}' title='Bonne réponse'>
+                  </div>
+                  ${cp
+                    ? `<div style='position:relative;display:inline-block;width:100%'>
+                        <img src='${cp}' style='width:100%;height:70px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.3)'>
+                        <button onclick='removeChoicePhoto(${idx},${i})' style='position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#e74c3c;border:none;color:white;font-size:.65rem;cursor:pointer'>✕</button>
+                      </div>`
+                    : `<div style='border:1px dashed rgba(255,255,255,.15);border-radius:8px;padding:.4rem;text-align:center;cursor:pointer;font-size:.75rem;color:rgba(255,255,255,.3)' onclick='triggerChoicePhoto(${idx},${i})'>
+                        📷 Ajouter une photo
+                      </div>`
+                  }
+                </div>`;
+              }).join('')}
             </div>
+            <input id='choicePhotoIn' type='file' accept='image/*' style='display:none'>
           </div>
           <div class="e-nav">
             <button class="btn btn-ghost" onclick="saveCurrentQ();renderEditor(${idx-1})" ${idx===0?'disabled':''}>← Précédent</button>
@@ -490,10 +520,39 @@ function renderEditor(idx) {
 }
 
 async function onPhoto(e, idx) {
-  const f=e.target.files[0]; if(!f) return;
-  e.target.previousElementSibling.innerHTML='<div style="color:rgba(255,255,255,.4)">⏳ Compression…</div>';
-  const d=await compressImg(f);
-  G.hostQs[idx].photo=d; saveQs(G.hostQs); renderEditor(idx);
+  const files=Array.from(e.target.files); if(!files.length) return;
+  e.target.previousElementSibling.innerHTML='<div style="color:rgba(255,255,255,.4)">⏳ Compression en cours…</div>';
+  if(!G.hostQs[idx].photos) G.hostQs[idx].photos=[];
+  for(const f of files){
+    const d=await compressImg(f);
+    G.hostQs[idx].photos.push(d);
+  }
+  saveQs(G.hostQs); renderEditor(idx);
+}
+
+function removePhoto(idx, pi) {
+  if(!G.hostQs[idx].photos) return;
+  G.hostQs[idx].photos.splice(pi,1);
+  saveQs(G.hostQs); renderEditor(idx);
+}
+
+function triggerChoicePhoto(idx, choiceIdx) {
+  const inp=$('choicePhotoIn'); if(!inp) return;
+  inp.onchange=async(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    const d=await compressImg(f);
+    if(!G.hostQs[idx].choicePhotos) G.hostQs[idx].choicePhotos=[null,null,null,null];
+    G.hostQs[idx].choicePhotos[choiceIdx]=d;
+    saveQs(G.hostQs); renderEditor(idx);
+    inp.value='';
+  };
+  inp.click();
+}
+
+function removeChoicePhoto(idx, choiceIdx) {
+  if(!G.hostQs[idx].choicePhotos) return;
+  G.hostQs[idx].choicePhotos[choiceIdx]=null;
+  saveQs(G.hostQs); renderEditor(idx);
 }
 
 function saveCurrentQ() {
@@ -578,11 +637,17 @@ async function showQuestion(idx) {
     <div class="q-body">
       ${q.photo?`<img src="${q.photo}" class="q-photo-host" alt="">`:''}      <div class="q-text-host">${q.text}</div>
       <div class="answers-host">
-        ${q.choices.map((c,i)=>`
-          <div class="ans-host ans-${LABELS[i]}">
-            <div class="ans-icon">${ICONS[i]}</div>
+        ${q.choices.map((c,i)=>{
+          const cp=(q.choicePhotos||[])[i];
+          if(cp) return `<div class='ans-host ans-${LABELS[i]} ans-photo'>
+            <div style='display:flex;align-items:center;gap:.4rem;width:100%'><div class='ans-icon'>${ICONS[i]}</div><span style='font-size:.8rem;opacity:.9'>${c||''}</span></div>
+            <img src='${cp}' alt=''>
+          </div>`;
+          return `<div class='ans-host ans-${LABELS[i]}'>
+            <div class='ans-icon'>${ICONS[i]}</div>
             <span>${c}</span>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>
       <div class="vote-ticker" id="voteTick">0 / ${pCount} votes</div>
       <button class="btn btn-ghost" style="margin-top:.75rem;font-size:.85rem" onclick="closeVotes(${idx})">Fermer les votes</button>
@@ -777,11 +842,18 @@ async function renderPQuestion(idx, startTime) {
     <div class="progress-bar"><div class="progress-fill" id="pProg" style="width:${rem/TIMER*100}%"></div></div>
     <div class="p-q-text">${q.text}</div>
     <div class="p-answers">
-      ${q.choices.map((c,i)=>`
-        <button class="p-btn ${LABELS[i]}" id="pb${i}" onclick="castVote(${idx},${i},${startTime})">
-          <span class="p-icon">${ICONS[i]}</span>
+      ${q.choices.map((c,i)=>{
+        const cp=(q.choicePhotos||[])[i];
+        if(cp) return `<button class='p-btn ${LABELS[i]} p-btn-photo' id='pb${i}' onclick='castVote(${idx},${i},${startTime})'>
+          <span style='font-size:.8rem;font-weight:800'>${ICONS[i]} ${LABELS[i]}</span>
+          <img src='${cp}' alt=''>
+          ${c?`<span class='p-label'>${c}</span>`:''}
+        </button>`;
+        return `<button class='p-btn ${LABELS[i]}' id='pb${i}' onclick='castVote(${idx},${i},${startTime})'>
+          <span class='p-icon'>${ICONS[i]}</span>
           <span>${c}</span>
-        </button>`).join('')}
+        </button>`;
+      }).join('')}
     </div>
   </div>`;
 
