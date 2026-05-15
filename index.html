@@ -477,7 +477,7 @@ function renderEditor(idx) {
         <div class="e-card fade-up">
           <h3>Question ${idx+1} / 30</h3>
           <div class="form-row">
-            <label>📸 Photos (une ou plusieurs — photo entière visible)</label>
+            <label>📸 Photo d'illustration (optionnel)</label>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
               ${(q.photos||[]).map((p,pi)=>`
                 <div style='position:relative;display:inline-block' title='Cliquer pour remplacer'>
@@ -498,7 +498,7 @@ function renderEditor(idx) {
             <textarea id="qTxt" rows="2" placeholder="Entrez votre question...">${q.text}</textarea>
           </div>
           <div class="form-row">
-            <label>🎯 Réponses — texte et/ou photo — cochez la bonne ✓</label>
+            <label>🎯 Réponses A/B/C/D — mets une photo sur chacune pour le mode grille ✓</label>
             <div class="choices-grid">
               ${LABELS.map((l,i)=>{
                 const cp=(q.choicePhotos||[])[i];
@@ -522,6 +522,11 @@ function renderEditor(idx) {
               }).join('')}
             </div>
             <input id='choicePhotoIn' type='file' accept='image/*' style='display:none'>
+            ${(q.choicePhotos||[]).filter(Boolean).length===4
+              ? `<div style='background:rgba(29,168,92,.1);border:1px solid rgba(29,168,92,.3);border-radius:10px;padding:.5rem .75rem;margin-top:.5rem;color:rgba(29,168,92,1);font-size:.8rem;font-weight:700'>✓ Mode grille 4 photos activé — s'affichera au-dessus de la question !</div>`
+              : (q.choicePhotos||[]).filter(Boolean).length>0
+                ? `<div style='background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.3);border-radius:10px;padding:.5rem .75rem;margin-top:.5rem;color:rgba(240,165,0,1);font-size:.8rem;font-weight:700'>⚠ Encore ${4-(q.choicePhotos||[]).filter(Boolean).length} photo(s) à ajouter pour activer le mode grille</div>`
+              : ''}
           </div>
           <div class="e-nav">
             <button class="btn btn-ghost" onclick="saveCurrentQ();renderEditor(${idx-1})" ${idx===0?'disabled':''}>← Précédent</button>
