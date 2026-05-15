@@ -226,6 +226,10 @@ label { display: block; color: var(--gold); font-size: .8rem; font-weight: 700; 
 .bubble-arena {
   position: absolute; inset: 0; overflow: hidden; pointer-events: none;
 }
+@keyframes float0 { 0%,100%{transform:translate(0,0) rotate(0deg)} 25%{transform:translate(8px,-10px) rotate(2deg)} 50%{transform:translate(-5px,8px) rotate(-1deg)} 75%{transform:translate(10px,5px) rotate(1.5deg)} }
+@keyframes float1 { 0%,100%{transform:translate(0,0) rotate(0deg)} 30%{transform:translate(-10px,-8px) rotate(-2deg)} 60%{transform:translate(7px,10px) rotate(1deg)} 80%{transform:translate(-8px,-5px) rotate(-1.5deg)} }
+@keyframes float2 { 0%,100%{transform:translate(0,0) rotate(0deg)} 20%{transform:translate(6px,10px) rotate(1deg)} 55%{transform:translate(-9px,-7px) rotate(-2deg)} 85%{transform:translate(5px,-9px) rotate(1deg)} }
+@keyframes float3 { 0%,100%{transform:translate(0,0)} 35%{transform:translate(-7px,8px) rotate(-1deg)} 65%{transform:translate(9px,-6px) rotate(2deg)} }
 @keyframes bubbleIn {
   from { transform: scale(0) rotate(-10deg); opacity: 0; }
   to   { transform: scale(1) rotate(0deg);   opacity: 1; }
@@ -740,7 +744,10 @@ function renderHostWaiting() {
           x = centerZoneRight + Math.random()*(window.innerWidth-centerZoneRight-margin-90);
         }
         y = margin + Math.random()*(window.innerHeight-margin*2-100);
-        bubble.style.cssText='left:'+x+'px;top:'+y+'px;animation-delay:'+(Math.random()*.3)+'s';
+        const floatAnim = 'float'+(Math.floor(Math.random()*4));
+        const floatDur  = (4+Math.random()*3).toFixed(1)+'s';
+        const floatDelay = (Math.random()*2).toFixed(1)+'s';
+        bubble.style.cssText='left:'+x+'px;top:'+y+'px;animation:bubbleIn .5s cubic-bezier(.34,1.56,.64,1) both, '+floatAnim+' '+floatDur+' '+floatDelay+' ease-in-out infinite';
         const imgHtml=p.photo
           ? '<img src="'+p.photo+'" alt="">'
           : '<div style="width:70px;height:70px;border-radius:50%;background:var(--surface);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.8rem">'+(p.emoji||'🎀')+'</div>';
@@ -1087,18 +1094,18 @@ async function showLeaderboard(idx) {
   const goodPodium =
     '<div style="position:relative;width:100%;max-width:640px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6)">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:18%;top:30%;transform:translateX(-50%)">'+bub(p2,64,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:10%;transform:translateX(-50%)">'+bub(p1,82,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:78%;top:34%;transform:translateX(-50%)">'+bub(p3,56,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:22.8%;top:28.3%;transform:translateX(-50%)">'+bub(p2,64,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:49.7%;top:12.6%;transform:translateX(-50%)">'+bub(p1,82,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:76.7%;top:31%;transform:translateX(-50%)">'+bub(p3,56,'#CD7F32')+'</div>'+
     '</div>';
 
   // Bad podium with photo background
   const badPodium =
     '<div style="position:relative;width:100%;max-width:520px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6)">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:15%;top:22%;transform:translateX(-50%)">'+bub(worst[1]||null,52,'#888')+'</div>'+
-    '<div style="position:absolute;left:49%;top:5%;transform:translateX(-50%)">'+bub(worst[0]||null,68,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:79%;top:27%;transform:translateX(-50%)">'+bub(worst[2]||null,48,'#6B5B3E')+'</div>'+
+    '<div style="position:absolute;left:17.7%;top:24.2%;transform:translateX(-50%)">'+bub(worst[1]||null,52,'#888')+'</div>'+
+    '<div style="position:absolute;left:48.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[0]||null,68,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:79.2%;top:27.6%;transform:translateX(-50%)">'+bub(worst[2]||null,48,'#6B5B3E')+'</div>'+
     '</div>';
 
   // Rest of leaderboard (4-10)
