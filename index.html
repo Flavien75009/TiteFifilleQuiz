@@ -398,6 +398,7 @@ const G = {
   pName: null, pScore: 0, hasVoted: false, myVote: null, selfieData: null,
   editIdx: 0, hostQs: [],
   participants: {}, timerIv: null,
+  voteHistory: {},
   listeners: []
 };
 
@@ -1106,7 +1107,7 @@ async function exportPDF() {
     <tbody>${rows}</tbody>
   </table>
   <div class="footer">⭐ = Super Question (points doublés)</div>
-  <script>window.onload=()=>window.print();</script>
+  <scr'+'ipt>window.onload=()=>window.print();</scr'+'ipt>
   </body></html>`);
   win.document.close();
 }
