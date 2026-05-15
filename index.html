@@ -465,11 +465,13 @@ function initQs() {
   return qs.slice(0,30);
 }
 function isComplete(q) { return q.text.trim() && q.choices.every(c=>c.trim()); }
-function isSuperQ(idx) { return (idx+1) % 10 === 0; }
-function calcPts(correct, timeLeft, superQ) {
+function isSuperQ(idx)      { return (idx+1) % 10 === 0; }
+function isUltimeQ(idx)     { return idx === 29; }
+function getQMultiplier(idx){ return idx===29 ? 3 : (idx+1)%10===0 ? 2 : 1; }
+function calcPts(correct, timeLeft, multiplier) {
   if(!correct) return 0;
   const base = Math.round(400 + (timeLeft/TIMER)*600);
-  return superQ ? base*2 : base;
+  return base * (multiplier||1);
 }
 function removeListeners() { G.listeners.forEach(r=>r.off()); G.listeners=[]; clearInterval(G.timerIv); }
 
