@@ -416,6 +416,7 @@ const G = {
   participants: {}, timerIv: null,
   voteHistory: {},
   closingVotes: false,
+  prevRanks: {},
   listeners: []
 };
 
@@ -472,6 +473,14 @@ function calcPts(correct, timeLeft, multiplier) {
   if(!correct) return 0;
   const base = Math.round(400 + (timeLeft/TIMER)*600);
   return base * (multiplier||1);
+}
+
+function rankArrow(pid, currentRank) {
+  if(!G.prevRanks[pid] && G.prevRanks[pid] !== 0) return '<span style="color:rgba(255,255,255,.3);font-size:.5rem;min-width:22px;text-align:center">—</span>';
+  const diff = G.prevRanks[pid] - currentRank; // positive = moved up
+  if(diff > 0) return '<span style="color:#1DA85C;font-size:.5rem;font-weight:800;min-width:22px;text-align:center">▲'+diff+'</span>';
+  if(diff < 0) return '<span style="color:#E8412A;font-size:.5rem;font-weight:800;min-width:22px;text-align:center">▼'+Math.abs(diff)+'</span>';
+  return '<span style="color:rgba(255,255,255,.4);font-size:.5rem;min-width:22px;text-align:center">=</span>';
 }
 function removeListeners() { G.listeners.forEach(r=>r.off()); G.listeners=[]; clearInterval(G.timerIv); }
 
@@ -1001,44 +1010,41 @@ async function showMiniLeaderboard(idx) {
   const best  = sorted.slice(0,3);
   const worst = [...sorted].reverse().slice(0,3);
 
+
   function bub(p, bc) {
     if(!p) return '';
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid '+bc+';box-shadow:0 3px 8px rgba(0,0,0,.9);display:block">'
-      : '<div style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:2px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 3px 8px rgba(0,0,0,.9)">'+p.emoji+'</div>';
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+ph+
-      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.55rem;padding:1px 4px;border-radius:8px;border:1.5px solid '+bc+';white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
+      ? '<img src="'+p.photo+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;border:2px solid '+bc+';box-shadow:0 2px 6px rgba(0,0,0,.9);display:block">'
+      : '<div style="width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.7);border:2px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:9px">'+p.emoji+'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'+ph+
+      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.48rem;padding:0 3px;border-radius:6px;border:1px solid '+bc+';white-space:nowrap;max-width:50px;overflow:hidden;text-overflow:ellipsis;line-height:1.4">'+p.name+'</div>'+
       '</div>';
   }
 
-  // Gold podium: block tops at y=105,165,188 in 315px SVG
-  // top% = (y - 32) / 315 * 100
   const goodPodium =
-    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden">'+
+    '<div style="position:relative;width:100%;max-width:260px;border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:21.2%;top:'+((165-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:'+((105-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:'+((188-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:21.2%;top:4.9%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:0.5%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:7.1%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
     '</div>';
 
-  // Stone podium: block tops at y=78,178,212 in 424px SVG
   const badPodium =
-    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden;margin-top:.3rem">'+
+    '<div style="position:relative;width:100%;max-width:260px;border-radius:6px;overflow:hidden;margin-top:.2rem">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:18.9%;top:'+((178-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-    '<div style="position:absolute;left:50%;top:'+((78-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:80.5%;top:'+((212-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '<div style="position:absolute;left:18.9%;top:6.5%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:0.5%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:9.1%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
     '</div>';
 
-  // Full leaderboard (up to 40)
   const medals = ['&#127945;','&#129352;','&#129353;'];
   let lbRows = '';
   sorted.forEach((p,i)=>{
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
+      ? '<img src="'+p.photo+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
       : '<span style="font-size:.75rem">'+p.emoji+'</span>';
     lbRows +=
-      '<div style="display:flex;align-items:center;gap:.35rem;padding:.18rem .35rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
+      '<div style="display:flex;align-items:center;gap:.35rem;padding:.12rem .3rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
       '<span style="font-size:'+(i<3?'.75rem':'.65rem')+';min-width:18px;text-align:center">'+(i<3?medals[i]:(i+1)+'.')+'</span>'+
       ph+
       '<span style="color:white;font-size:.7rem;font-weight:'+(i<3?'700':'500')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span>'+
@@ -1051,9 +1057,9 @@ async function showMiniLeaderboard(idx) {
     '<div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span>'+
     '<span style="color:var(--gold);font-weight:900">&#127942; Podiums — Q.'+(idx+1)+'</span>'+
     '<span></span></div>'+
-    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:.5rem;overflow:hidden">'+
+    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.3rem;padding:.3rem;overflow:hidden">'+
     // Colonne gauche: 2 podiums
-    '<div style="display:flex;flex-direction:column;gap:.15rem;overflow:hidden;align-items:center">'+
+    '<div style="display:flex;flex-direction:column;gap:.1rem;overflow:hidden;align-items:center">'+
     '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
     '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
@@ -1068,7 +1074,7 @@ async function showMiniLeaderboard(idx) {
     '</div>'+
     '</div>'+
     // Bouton
-    '<div style="padding:.75rem;text-align:center;background:rgba(0,0,0,.3)">'+
+    '<div style="padding:.4rem;text-align:center;background:rgba(0,0,0,.3)">'+
     '<button class="btn btn-pink btn-big" onclick="launchQuestion('+(idx+1)+')">Question '+(idx+2)+' &#8594;</button>'+
     '</div></div>';
 }
@@ -1089,41 +1095,41 @@ async function showLeaderboard(idx) {
   const best  = sorted.slice(0,3);
   const worst = [...sorted].reverse().slice(0,3);
 
+
   function bub(p, bc) {
     if(!p) return '';
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid '+bc+';box-shadow:0 3px 8px rgba(0,0,0,.9);display:block">'
-      : '<div style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:2px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 3px 8px rgba(0,0,0,.9)">'+p.emoji+'</div>';
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+ph+
-      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.55rem;padding:1px 4px;border-radius:8px;border:1.5px solid '+bc+';white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
+      ? '<img src="'+p.photo+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;border:2px solid '+bc+';box-shadow:0 2px 6px rgba(0,0,0,.9);display:block">'
+      : '<div style="width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.7);border:2px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:9px">'+p.emoji+'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'+ph+
+      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.48rem;padding:0 3px;border-radius:6px;border:1px solid '+bc+';white-space:nowrap;max-width:50px;overflow:hidden;text-overflow:ellipsis;line-height:1.4">'+p.name+'</div>'+
       '</div>';
   }
 
   const goodPodium =
-    '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden">'+
+    '<div style="position:relative;width:100%;max-width:260px;border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:21.2%;top:'+((165-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:'+((105-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:'+((188-32)/315*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:21.2%;top:4.9%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:0.5%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:7.1%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
     '</div>';
 
-  const badPodium = sorted.length>=3
-    ? '<div style="position:relative;width:100%;max-width:320px;border-radius:8px;overflow:hidden;margin-top:.3rem">'+
-      '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-      '<div style="position:absolute;left:18.9%;top:'+((178-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-      '<div style="position:absolute;left:50%;top:'+((78-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-      '<div style="position:absolute;left:80.5%;top:'+((212-32)/424*100).toFixed(1)+'%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
-      '</div>'
-    : '';
+  const badPodium =
+    '<div style="position:relative;width:100%;max-width:260px;border-radius:6px;overflow:hidden;margin-top:.2rem">'+
+    '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
+    '<div style="position:absolute;left:18.9%;top:6.5%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:0.5%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:9.1%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '</div>';
 
   const medals = ['&#127945;','&#129352;','&#129353;'];
   let lbRows = '';
   sorted.forEach((p,i)=>{
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
+      ? '<img src="'+p.photo+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;border:1.5px solid '+(i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'#555')+'">'
       : '<span style="font-size:.75rem">'+p.emoji+'</span>';
     lbRows +=
-      '<div style="display:flex;align-items:center;gap:.35rem;padding:.18rem .35rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
+      '<div style="display:flex;align-items:center;gap:.35rem;padding:.12rem .3rem;background:'+(i%2===0?'rgba(255,255,255,.04)':'transparent')+';border-radius:4px">'+
       '<span style="font-size:'+(i<3?'.75rem':'.65rem')+';min-width:18px;text-align:center">'+(i<3?medals[i]:(i+1)+'.')+'</span>'+
       ph+
       '<span style="color:white;font-size:.7rem;font-weight:'+(i<3?'700':'500')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span>'+
@@ -1142,8 +1148,8 @@ async function showLeaderboard(idx) {
     '<div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span>'+
     '<span style="color:var(--gold);font-weight:900">'+(isFinal?'&#127942; CLASSEMENT FINAL':'&#127942; Classement Q.'+(idx+1))+'</span>'+
     '<span></span></div>'+
-    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:.5rem;overflow:hidden">'+
-    '<div style="display:flex;flex-direction:column;gap:.15rem;overflow:hidden;align-items:center">'+
+    '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.3rem;padding:.3rem;overflow:hidden">'+
+    '<div style="display:flex;flex-direction:column;gap:.1rem;overflow:hidden;align-items:center">'+
     '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
     '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
@@ -1156,7 +1162,7 @@ async function showLeaderboard(idx) {
     '</div>'+
     '</div>'+
     '</div>'+
-    '<div style="padding:.75rem;text-align:center;background:rgba(0,0,0,.3)">'+actionBtn+'</div>'+
+    '<div style="padding:.4rem;text-align:center;background:rgba(0,0,0,.3)">'+actionBtn+'</div>'+
     '</div>';
 }
 
