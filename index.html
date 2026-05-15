@@ -418,6 +418,7 @@ const G = {
   editIdx: 0, hostQs: [],
   participants: {}, timerIv: null,
   voteHistory: {},
+  closingVotes: false,
   listeners: []
 };
 
@@ -733,10 +734,16 @@ function renderHostWaiting() {
         knownPids.add(pid);
         const bubble=document.createElement('div');
         bubble.className='participant-bubble';
-        // Bulles sur tout l'écran
-        const margin=10;
-        const x = margin + Math.random()*(window.innerWidth  - margin*2 - 90);
-        const y = margin + Math.random()*(window.innerHeight - margin*2 - 100);
+        // Bulles partout SAUF sur le QR code (zone centrale)
+        const margin = 10;
+        const W = window.innerWidth, H = window.innerHeight;
+        const qrL = W*0.28, qrR = W*0.72, qrT = H*0.15, qrB = H*0.80;
+        let x, y, attempts = 0;
+        do {
+          x = margin + Math.random()*(W - margin*2 - 90);
+          y = margin + Math.random()*(H - margin*2 - 90);
+          attempts++;
+        } while(attempts < 20 && x > qrL && x < qrR && y > qrT && y < qrB);
         const floatAnim = 'float'+(Math.floor(Math.random()*4));
         const floatDur  = (1.5+Math.random()*1.5).toFixed(1)+'s';
         const floatDelay = (Math.random()*2).toFixed(1)+'s';
@@ -785,6 +792,7 @@ function showSuperIntro(idx) {
 }
 
 async function showQuestion(idx) {
+  G.closingVotes = false;  // reset on new question
   removeListeners(); G.hasVoted=false;
   const q=G.hostQs[idx];
   const startTime=Date.now();
@@ -862,6 +870,8 @@ async function showQuestion(idx) {
 }
 
 async function closeVotes(idx) {
+  if(G.closingVotes) return;  // prevent double-call
+  G.closingVotes = true;
   clearInterval(G.timerIv);
   removeListeners();
   const q = G.hostQs[idx];
@@ -937,6 +947,7 @@ async function closeVotes(idx) {
     ? '<button class="btn btn-gold btn-big" onclick="showLeaderboard('+idx+')">&#127942; Voir le classement</button>'
     : '<button class="btn btn-pink btn-big" onclick="showMiniLeaderboard('+idx+')">&#128202; Classement &amp; suite</button>';
 
+  G.closingVotes = false;  // reset guard
   app().innerHTML=
     '<div class="q-screen">'+
     '<div class="hdr">'+
