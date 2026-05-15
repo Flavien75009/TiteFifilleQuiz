@@ -480,9 +480,10 @@ function renderEditor(idx) {
             <label>📸 Photos (une ou plusieurs — photo entière visible)</label>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
               ${(q.photos||[]).map((p,pi)=>`
-                <div style='position:relative;display:inline-block'>
-                  <img src='${p}' style='height:80px;border-radius:8px;object-fit:contain;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)'>
+                <div style='position:relative;display:inline-block' title='Cliquer pour remplacer'>
+                  <img src='${p}' style='height:80px;border-radius:8px;object-fit:contain;background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.2);cursor:pointer' onclick='replacePhoto(${idx},${pi})'>
                   <button onclick='removePhoto(${idx},${pi})' style='position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:none;color:white;font-size:.7rem;cursor:pointer'>✕</button>
+                  <div style='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:white;font-size:.6rem;text-align:center;border-radius:0 0 6px 6px;padding:1px'>🔄 remplacer</div>
                 </div>`).join('')}
             </div>
             <div class="photo-drop" onclick="$('photoIn').click()">
@@ -508,9 +509,10 @@ function renderEditor(idx) {
                     <input type='radio' class='choice-radio' name='cor' value='${i}' ${q.correct===i?'checked':''} onchange='G.hostQs[${idx}].correct=${i}' title='Bonne réponse'>
                   </div>
                   ${cp
-                    ? `<div style='position:relative;display:inline-block;width:100%'>
-                        <img src='${cp}' style='width:100%;height:70px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.3)'>
+                    ? `<div style='position:relative;display:inline-block;width:100%' title='Cliquer pour remplacer'>
+                        <img src='${cp}' style='width:100%;height:70px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.3);cursor:pointer' onclick='triggerChoicePhoto(${idx},${i},true)'>
                         <button onclick='removeChoicePhoto(${idx},${i})' style='position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#e74c3c;border:none;color:white;font-size:.65rem;cursor:pointer'>✕</button>
+                        <div style='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:white;font-size:.6rem;text-align:center;border-radius:0 0 6px 6px;padding:1px'>🔄 remplacer</div>
                       </div>`
                     : `<div style='border:1px dashed rgba(255,255,255,.15);border-radius:8px;padding:.4rem;text-align:center;cursor:pointer;font-size:.75rem;color:rgba(255,255,255,.3)' onclick='triggerChoicePhoto(${idx},${i})'>
                         📷 Ajouter une photo
@@ -548,7 +550,20 @@ function removePhoto(idx, pi) {
   saveQs(G.hostQs); renderEditor(idx);
 }
 
-function triggerChoicePhoto(idx, choiceIdx) {
+function replacePhoto(idx, pi) {
+  const inp=$('photoIn'); if(!inp) return;
+  const origOnChange = inp.onchange;
+  inp.onchange=async(e)=>{
+    const f=e.target.files[0]; if(!f){inp.onchange=origOnChange;return;}
+    const d=await compressImg(f);
+    G.hostQs[idx].photos[pi]=d;
+    saveQs(G.hostQs); renderEditor(idx);
+    inp.value='';
+  };
+  inp.click();
+}
+
+function triggerChoicePhoto(idx, choiceIdx, replace=false) {
   const inp=$('choicePhotoIn'); if(!inp) return;
   inp.onchange=async(e)=>{
     const f=e.target.files[0]; if(!f) return;
