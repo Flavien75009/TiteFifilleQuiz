@@ -991,22 +991,27 @@ async function castVote(idx, choice, startTime) {
 }
 
 async function renderPResult(idx, q) {
+  clearInterval(G.timerIv);
   const pSnap=await db.ref('sessions/'+G.sessionId+'/participants/'+PID).once('value');
   const pd=pSnap.val()||{}; G.pScore=pd.score||0;
-  const pts=pd.lastPts||0, ok=G.hasVoted&&G.myVote===q.correct;
+  const pts=pd.lastPts||0;
+  const ok=G.hasVoted&&G.myVote===q.correct;
   const feedbackPhoto = (!G.hasVoted||!ok) ? PHOTO_WRONG : PHOTO_CORRECT;
-  const feedbackMsg   = !G.hasVoted ? 'Trop lent… 😅' : ok ? 'Cacou est fière de vous ! 🎀' : 'Ahahah vous ne connaissez pas Pedro ! 😂';
-  app().innerHTML=`
-  <div class="p-page">
-    <div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span><span style="color:rgba(255,255,255,.5)">Q.${idx+1}/30</span></div>
-    <div class="p-result">
-      <img src="${feedbackPhoto}" class="pop" style="width:160px;height:160px;object-fit:cover;border-radius:50%;border:4px solid ${ok?'#1DA85C':'#E8412A'};margin-bottom:.75rem;box-shadow:0 4px 24px rgba(0,0,0,.5)">
-      <div class="result-verdict">${feedbackMsg}</div>
-      ${pts>0?`<div class="result-pts pop">+${pts} pts</div>`:\'\'}
-      <div class="result-total">Total : ${G.pScore.toLocaleString()} pts</div>
-      <div style="color:rgba(255,255,255,.3);margin-top:1.5rem;font-size:.9rem" class="pulse">En attente de la prochaine question...</div>
-    </div>
-  </div>`;
+  const feedbackMsg   = !G.hasVoted ? 'Trop lent... !' : ok ? 'Cacou est fiere de vous ! !' : 'Ahahah vous ne connaissez pas Pedro ! !';
+
+  const ptsHtml = pts>0 ? '<div class="result-pts pop">+'+pts+' pts</div>' : '';
+  const borderColor = ok ? '#1DA85C' : '#E8412A';
+
+  app().innerHTML =
+    '<div class="p-page">' +
+    '<div class="hdr"><span class="hdr-logo">Tite Fifille Quiz</span><span style="color:rgba(255,255,255,.5)">Q.'+(idx+1)+'/30</span></div>' +
+    '<div class="p-result">' +
+    '<img src="'+feedbackPhoto+'" class="pop" style="width:160px;height:160px;object-fit:cover;border-radius:50%;border:4px solid '+borderColor+';margin-bottom:.75rem;box-shadow:0 4px 24px rgba(0,0,0,.5)">' +
+    '<div class="result-verdict">'+feedbackMsg+'</div>' +
+    ptsHtml +
+    '<div class="result-total">Total : '+G.pScore.toLocaleString()+' pts</div>' +
+    '<div style="color:rgba(255,255,255,.3);margin-top:1.5rem;font-size:.9rem" class="pulse">En attente de la prochaine question...</div>' +
+    '</div></div>';
 
   const mRef=db.ref('sessions/'+G.sessionId+'/meta');
   G.listeners.push(mRef);
