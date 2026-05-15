@@ -682,6 +682,43 @@ async function showQuestion(idx) {
   const startTime=Date.now();
   await db.ref('sessions/'+G.sessionId+'/meta').update({status:'question',currentQuestion:idx,questionStartTime:startTime});
   const pCount=Object.keys(G.participants).length;
+  const allPhotos=(q.choicePhotos||[]).filter(Boolean).length===4;
+
+  // Build answer section HTML separately to avoid nested template literal issues
+  let answerHtml = '';
+  if(allPhotos) {
+    const BG=['#E8412A','#2980E8','#F0A500','#1DA85C'];
+    answerHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;width:100%;max-width:900px;margin-bottom:.6rem">';
+    q.choices.forEach((c,i)=>{
+      const cp=q.choicePhotos[i];
+      answerHtml += '<div style="background:'+BG[i]+';border-radius:14px;overflow:hidden;display:flex;flex-direction:column">';
+      answerHtml += '<div style="display:flex;align-items:center;gap:.4rem;color:white;font-weight:800;padding:.4rem .7rem">';
+      answerHtml += '<div style="width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ICONS[i]+'</div>';
+      answerHtml += '<span>'+LABELS[i]+(c?' — '+c:'')+'</span></div>';
+      answerHtml += '<img src="'+cp+'" style="width:100%;height:170px;object-fit:contain;background:rgba(0,0,0,.25)" alt="">';
+      answerHtml += '</div>';
+    });
+    answerHtml += '</div>';
+    answerHtml += '<div class="q-text-host" style="font-size:1.3rem;margin-bottom:.4rem">'+q.text+'</div>';
+  } else {
+    let photoHtml = '';
+    if(q.photos&&q.photos.length) {
+      photoHtml = '<div class="photos-row">'+q.photos.map(p=>'<img src="'+p+'" class="q-photo-host" alt="">').join('')+'</div>';
+    }
+    let choicesHtml = '<div class="answers-host">';
+    q.choices.forEach((c,i)=>{
+      const cp=(q.choicePhotos||[])[i];
+      if(cp) {
+        choicesHtml += '<div class="ans-host ans-'+LABELS[i]+' ans-photo">';
+        choicesHtml += '<div style="display:flex;align-items:center;gap:.4rem;width:100%"><div class="ans-icon">'+ICONS[i]+'</div><span style="font-size:.8rem;opacity:.9">'+(c||'')+'</span></div>';
+        choicesHtml += '<img src="'+cp+'" alt=""></div>';
+      } else {
+        choicesHtml += '<div class="ans-host ans-'+LABELS[i]+'"><div class="ans-icon">'+ICONS[i]+'</div><span>'+c+'</span></div>';
+      }
+    });
+    choicesHtml += '</div>';
+    answerHtml = photoHtml + '<div class="q-text-host">'+q.text+'</div>' + choicesHtml;
+  }
 
   app().innerHTML=`
   <div class="q-screen">
@@ -692,33 +729,7 @@ async function showQuestion(idx) {
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:100%"></div></div>
     <div class="q-body">
-      ${(()=>{
-        const allPhotos=(q.choicePhotos||[]).filter(Boolean).length===4;
-        if(allPhotos) return `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;width:100%;max-width:900px;margin-bottom:.6rem">
-            ${q.choices.map((c,i)=>{
-              const cp=q.choicePhotos[i];
-              const bg=['#E8412A','#2980E8','#F0A500','#1DA85C'][i];
-              return \`<div style="background:\${bg};border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
-                <div style="display:flex;align-items:center;gap:.4rem;color:white;font-weight:800;padding:.4rem .7rem">
-                  <div style="width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">\${ICONS[i]}</div>
-                  <span>\${LABELS[i]}\${c?' — '+c:''}</span>
-                </div>
-                <img src="\${cp}" style="width:100%;height:170px;object-fit:contain;background:rgba(0,0,0,.25)" alt="">
-              </div>\`;
-            }).join('')}
-          </div>
-          <div class="q-text-host" style="font-size:1.3rem;margin-bottom:.4rem">\${q.text}</div>`;
-        return \`\${(q.photos&&q.photos.length)?'<div class="photos-row">'+q.photos.map(p=>'<img src="'+p+'" class="q-photo-host" alt="">').join('')+'</div>':''}
-          <div class="q-text-host">\${q.text}</div>
-          <div class="answers-host">
-            \${q.choices.map((c,i)=>{
-              const cp=(q.choicePhotos||[])[i];
-              if(cp) return '<div class="ans-host ans-'+LABELS[i]+' ans-photo"><div style="display:flex;align-items:center;gap:.4rem;width:100%"><div class="ans-icon">'+ICONS[i]+'</div><span style="font-size:.8rem;opacity:.9">'+(c||'')+'</span></div><img src="'+cp+'" alt=""></div>';
-              return '<div class="ans-host ans-'+LABELS[i]+'"><div class="ans-icon">'+ICONS[i]+'</div><span>'+c+'</span></div>';
-            }).join('')}
-          </div>\`;
-      })()}
+      ${answerHtml}
       <div class="vote-ticker" id="voteTick">0 / ${pCount} votes</div>
       <button class="btn btn-ghost" style="margin-top:.75rem;font-size:.85rem" onclick="closeVotes(${idx})">Fermer les votes</button>
     </div>
