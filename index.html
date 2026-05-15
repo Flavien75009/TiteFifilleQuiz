@@ -1012,9 +1012,9 @@ async function showMiniLeaderboard(idx) {
     '<div style="font-family:Pacifico,cursive;color:var(--gold);font-size:.85rem;text-align:center">&#127942; Les Meilleurs</div>'+
     '<div style="position:relative;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.6)">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:22.8%;top:28.3%;transform:translateX(-50%)">'+bub(p2,42,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:49.7%;top:12.6%;transform:translateX(-50%)">'+bub(p1,54,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:76.7%;top:31%;transform:translateX(-50%)">'+bub(p3,38,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:22.8%;top:28.3%;transform:translateX(-50%)">'+bub(p2,22,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:49.7%;top:12.6%;transform:translateX(-50%)">'+bub(p1,28,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:76.7%;top:31%;transform:translateX(-50%)">'+bub(p3,20,'#CD7F32')+'</div>'+
     '</div></div>';
 
   // Podium mauvais — droite
@@ -1023,9 +1023,9 @@ async function showMiniLeaderboard(idx) {
     '<div style="font-family:Pacifico,cursive;color:#CD853F;font-size:.85rem;text-align:center">&#128293; Les Derniers</div>'+
     '<div style="position:relative;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.6)">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:17.7%;top:24.2%;transform:translateX(-50%)">'+bub(worst[1]||null,36,'#888')+'</div>'+
-    '<div style="position:absolute;left:48.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[0]||null,46,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:79.2%;top:27.6%;transform:translateX(-50%)">'+bub(worst[2]||null,32,'#6B5B3E')+'</div>'+
+    '<div style="position:absolute;left:17.7%;top:24.2%;transform:translateX(-50%)">'+bub(worst[1]||null,18,'#888')+'</div>'+
+    '<div style="position:absolute;left:48.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[0]||null,24,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:79.2%;top:27.6%;transform:translateX(-50%)">'+bub(worst[2]||null,16,'#6B5B3E')+'</div>'+
     '</div></div>';
 
   // Top 5 list below
@@ -1093,9 +1093,9 @@ async function showLeaderboard(idx) {
     '<div style="font-family:Pacifico,cursive;color:var(--gold);font-size:.9rem;text-align:center">&#127942; Les Meilleurs</div>'+
     '<div style="position:relative;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.6)">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:22.8%;top:28.3%;transform:translateX(-50%)">'+bub(p2,44,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:49.7%;top:12.6%;transform:translateX(-50%)">'+bub(p1,56,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:76.7%;top:31%;transform:translateX(-50%)">'+bub(p3,40,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:22.8%;top:28.3%;transform:translateX(-50%)">'+bub(p2,22,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:49.7%;top:12.6%;transform:translateX(-50%)">'+bub(p1,28,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:76.7%;top:31%;transform:translateX(-50%)">'+bub(p3,20,'#CD7F32')+'</div>'+
     '</div></div>';
 
   const badPodium = isFinal && sorted.length>=3
@@ -1103,9 +1103,9 @@ async function showLeaderboard(idx) {
       '<div style="font-family:Pacifico,cursive;color:#CD853F;font-size:.9rem;text-align:center">&#128293; Les Derniers</div>'+
       '<div style="position:relative;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.6)">'+
       '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-      '<div style="position:absolute;left:17.7%;top:24.2%;transform:translateX(-50%)">'+bub(worst[1]||null,38,'#888')+'</div>'+
-      '<div style="position:absolute;left:48.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[0]||null,50,'#8B7355')+'</div>'+
-      '<div style="position:absolute;left:79.2%;top:27.6%;transform:translateX(-50%)">'+bub(worst[2]||null,34,'#6B5B3E')+'</div>'+
+      '<div style="position:absolute;left:17.7%;top:24.2%;transform:translateX(-50%)">'+bub(worst[1]||null,19,'#888')+'</div>'+
+      '<div style="position:absolute;left:48.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[0]||null,25,'#8B7355')+'</div>'+
+      '<div style="position:absolute;left:79.2%;top:27.6%;transform:translateX(-50%)">'+bub(worst[2]||null,17,'#6B5B3E')+'</div>'+
       '</div></div>'
     : '';
 
