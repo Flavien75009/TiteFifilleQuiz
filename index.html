@@ -206,6 +206,30 @@ label { display: block; color: var(--gold); font-size: .8rem; font-weight: 700; 
 .qr-box { background: white; display: inline-block; padding: 1rem; border-radius: 16px; margin: 1rem 0; box-shadow: 0 0 40px rgba(255,215,0,.3), 0 0 0 4px rgba(255,215,0,.2); }
 .session-url { color: rgba(255,255,255,.35); font-size: .8rem; margin-bottom: 1rem; word-break: break-all; }
 .chips-wrap { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; max-width: 600px; margin: .75rem auto; }
+.participant-bubble {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  animation: bubbleIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  pointer-events: none;
+}
+.participant-bubble img {
+  width: 70px; height: 70px; object-fit: cover; border-radius: 50%;
+  border: 3px solid var(--gold); box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+.participant-bubble .p-bubble-name {
+  color: white; font-size: .75rem; font-weight: 700;
+  background: rgba(0,0,0,.5); padding: .15rem .5rem;
+  border-radius: 20px; backdrop-filter: blur(4px);
+  max-width: 90px; text-align: center; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.bubble-arena {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+@keyframes bubbleIn {
+  from { transform: scale(0) rotate(-10deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
 .chip { background: linear-gradient(135deg, rgba(255,107,157,.2), rgba(156,39,176,.2)); border: 1px solid rgba(255,107,157,.3); color: rgba(255,255,255,.85); padding: .3rem .9rem; border-radius: 50px; font-size: .85rem; font-weight: 700; }
 
 /* PARTICIPANT */
@@ -370,7 +394,7 @@ if (!PID) { PID = 'p_' + Date.now().toString(36) + Math.random().toString(36).su
 
 const G = {
   mode: null, sessionId: null,
-  pName: null, pScore: 0, hasVoted: false, myVote: null,
+  pName: null, pScore: 0, hasVoted: false, myVote: null, selfieData: null,
   editIdx: 0, hostQs: [],
   participants: {}, timerIv: null,
   listeners: []
@@ -636,13 +660,14 @@ function renderHostWaiting() {
   const base = rawBase.replace(/\?.*$/, '').replace(/\/+$/, '') + '/';
   const url = base + '?session=' + sid;
   app().innerHTML=`
-  <div style="min-height:100vh;display:flex;flex-direction:column">
-    <div class="hdr">
+  <div style="min-height:100vh;display:flex;flex-direction:column;position:relative">
+    <div class="bubble-arena" id="bubbleArena"></div>
+    <div class="hdr" style="position:relative;z-index:10">
       <span class="hdr-logo">Tite Fifille Quiz</span>
       <span style="color:var(--gold);font-weight:900;letter-spacing:3px;font-size:1.1rem">${sid}</span>
       <span id="pCnt" style="color:rgba(255,255,255,.5)">0 joueur(s)</span>
     </div>
-    <div class="body-center">
+    <div class="body-center" style="position:relative;z-index:10">
       <div class="waiting-center float-in">
         <div style="font-family:'Pacifico',cursive;color:var(--gold);font-size:1.4rem;margin-bottom:.5rem">📱 Scannez pour rejoindre !</div>
         <div class="qr-box" id="qrWrap"></div>
@@ -673,16 +698,33 @@ function renderHostWaiting() {
     if(el) new QRCode(el,{text:url,width:210,height:210,colorDark:'#2a1a2e',colorLight:'#ffffff'});
   },80);
 
+  const knownPids = new Set();
   const pRef=db.ref('sessions/'+sid+'/participants');
   G.listeners.push(pRef);
   pRef.on('value',snap=>{
     const ps=snap.val()||{}; G.participants=ps;
     const n=Object.keys(ps).length;
     const el=$('pCnt'); if(el) el.textContent=n+' joueur(s)';
-    const chips=$('chipWrap');
-    if(chips) chips.innerHTML=Object.values(ps).map(p=>`<div class="chip">${p.emoji||'🎀'} ${p.name}</div>`).join('');
+    // Add new bubbles for new participants
+    const arena=$('bubbleArena');
+    Object.entries(ps).forEach(([pid,p])=>{
+      if(!knownPids.has(pid) && arena){
+        knownPids.add(pid);
+        const bubble=document.createElement('div');
+        bubble.className='participant-bubble';
+        const margin=80;
+        const x=margin+Math.random()*(window.innerWidth-margin*2);
+        const y=margin+Math.random()*(window.innerHeight-margin*2);
+        bubble.style.cssText='left:'+x+'px;top:'+y+'px;animation-delay:'+(Math.random()*.3)+'s';
+        const imgHtml=p.photo
+          ? '<img src="'+p.photo+'" alt="">'
+          : '<div style="width:70px;height:70px;border-radius:50%;background:var(--surface);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.8rem">'+(p.emoji||'🎀')+'</div>';
+        bubble.innerHTML=imgHtml+'<div class="p-bubble-name">'+(p.emoji||'')+'&nbsp;'+p.name+'</div>';
+        arena.appendChild(bubble);
+      }
+    });
     const btn=$('startBtn');
-    if(btn&&n>0){btn.disabled=false;btn.textContent='▶ Démarrer le quiz !';}
+    if(btn&&n>0){btn.disabled=false;btn.textContent='▶ Démarrer ('+n+') !';}
   });
 }
 
@@ -856,7 +898,7 @@ async function closeVotes(idx) {
 async function showLeaderboard(idx) {
   const pSnap=await db.ref('sessions/'+G.sessionId+'/participants').once('value');
   G.participants=pSnap.val()||{};
-  const sorted=Object.entries(G.participants).map(([id,p])=>({name:p.name,score:p.score||0,emoji:p.emoji||'🎀'})).sort((a,b)=>b.score-a.score);
+  const sorted=Object.entries(G.participants).map(([id,p])=>({name:p.name,score:p.score||0,emoji:p.emoji||'🎀',photo:p.photo||null})).sort((a,b)=>b.score-a.score);
   const isFinal=idx===29;
   await db.ref('sessions/'+G.sessionId+'/meta').update({status:'leaderboard',leaderboard:sorted.slice(0,10).map(p=>({name:p.name,score:p.score}))});
   const medals=['🥇','🥈','🥉']; const classes=['gold','silver','bronze'];
@@ -874,7 +916,8 @@ async function showLeaderboard(idx) {
         ${sorted.slice(0,10).map((p,i)=>`
           <div class="lb-row ${classes[i]||''}" style="animation:fadeUp .3s ${i*60}ms both">
             <div class="lb-rank">${i<3?medals[i]:(i+1)+'.'}</div>
-            <div class="lb-name">${p.emoji||'🎀'} ${p.name}</div>
+            ${p.photo?`<img src='${p.photo}' style='width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid var(--gold);flex-shrink:0'>`:"<span style='font-size:1.3rem'>"+p.emoji+"</span>"}
+            <div class="lb-name">${p.name}</div>
             <div class="lb-score">${p.score.toLocaleString()} pts</div>
           </div>`).join('')}
         ${sorted.length===0?'<div style="color:rgba(255,255,255,.3);text-align:center">Aucun participant</div>':''}
@@ -918,32 +961,52 @@ function showPSuperIntro(idx) {
 }
 
 function renderJoin() {
-  app().innerHTML=`
-  <div class="join-page">
-    <div style="font-family:'Pacifico',cursive;color:var(--gold);font-size:1.8rem;text-align:center;margin-bottom:2rem;line-height:1.4;text-shadow:0 2px 15px rgba(255,215,0,.3)">
-      🎀 Tite Fifille Quiz 🎀
-    </div>
-    <div class="join-card">
-      <h2>Rejoindre ! 🎉</h2>
-      <div class="join-sub">Session : <strong style="color:var(--gold)">${G.sessionId}</strong></div>
-      <div class="form-row">
-        <label>Ton prénom</label>
-        <input id="nameIn" type="text" placeholder="Ex : Marie" maxlength="18"
-          onkeydown="if(event.key==='Enter')doJoin()">
-      </div>
-      <button class="btn btn-pink" style="width:100%;margin-top:.5rem" onclick="doJoin()">C'est parti ! 🚀</button>
-    </div>
-  </div>`;
-  setTimeout(()=>$('nameIn')?.focus(),100);
+  const sid = G.sessionId;
+  const card = document.createElement('div');
+  card.className = 'join-page';
+  card.innerHTML =
+    '<div style="font-family:Pacifico,cursive;color:var(--gold);font-size:1.8rem;text-align:center;margin-bottom:2rem;line-height:1.4;text-shadow:0 2px 15px rgba(255,215,0,.3)">'+
+    '&#127128; Tite Fifille Quiz &#127128;</div>'+
+    '<div class="join-card">'+
+    '<h2>Rejoindre ! &#127881;</h2>'+
+    '<div class="join-sub">Session : <strong style="color:var(--gold)">'+sid+'</strong></div>'+
+    '<div class="form-row">'+
+    '<label>Ton pr&#233;nom</label>'+
+    '<input id="nameIn" type="text" placeholder="Ex : Marie" maxlength="18">'+
+    '</div>'+
+    '<div class="form-row">'+
+    '<label>&#128248; Ta photo (optionnel)</label>'+
+    '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.3rem">'+
+    '<div id="selfieCircle" style="width:72px;height:72px;border-radius:50%;border:2px dashed rgba(255,215,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:1.8rem;background:rgba(255,255,255,.05)">&#128247;</div>'+
+    '<div style="color:rgba(255,255,255,.4);font-size:.8rem;line-height:1.4">Prends un selfie ou<br>choisis une photo !</div>'+
+    '</div>'+
+    '<input id="selfieIn" type="file" accept="image/*" capture="user" style="display:none">'+
+    '</div>'+
+    '<button class="btn btn-pink" id="joinBtn" style="width:100%;margin-top:.5rem">C&#39;est parti ! &#128640;</button>'+
+    '</div>';
+  app().innerHTML = '';
+  app().appendChild(card);
+  // Attach events after render
+  setTimeout(()=>{
+    const nameIn = document.getElementById('nameIn');
+    const selfieCircle = document.getElementById('selfieCircle');
+    const selfieIn = document.getElementById('selfieIn');
+    const joinBtn = document.getElementById('joinBtn');
+    if(nameIn){ nameIn.focus(); nameIn.addEventListener('keydown',e=>{if(e.key==='Enter') doJoin();}); }
+    if(selfieCircle && selfieIn) selfieCircle.addEventListener('click',()=>selfieIn.click());
+    if(selfieIn) selfieIn.addEventListener('change', onSelfie);
+    if(joinBtn) joinBtn.addEventListener('click', doJoin);
+  },50);
 }
 
 async function doJoin() {
   const n=$('nameIn')?.value.trim(); if(!n){alert('Entrez votre prénom !');return;}
   G.pName=n;
-  // Pick unique emoji based on PID hash
   const emojiIdx = PID.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % EMOJIS.length;
   G.pEmoji = EMOJIS[emojiIdx];
-  await db.ref('sessions/'+G.sessionId+'/participants/'+PID).set({name:n,score:0,emoji:G.pEmoji,joinedAt:Date.now()});
+  const pData = {name:n, score:0, emoji:G.pEmoji, joinedAt:Date.now()};
+  if(G.selfieData) pData.photo = G.selfieData;
+  await db.ref('sessions/'+G.sessionId+'/participants/'+PID).set(pData);
   renderPWaiting();
 }
 
