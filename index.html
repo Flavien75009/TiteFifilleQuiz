@@ -372,6 +372,13 @@ const G = {
 const $ = id => document.getElementById(id);
 const app = () => document.getElementById('app');
 
+function savePublicUrl() {
+  const v = $('publicUrlIn')?.value.trim();
+  if (!v) return;
+  localStorage.setItem('bq_public_url', v.endsWith('/') ? v : v + '/');
+  alert('URL sauvegardée ! Relance une session.');
+}
+
 function genId() {
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
   for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s;
@@ -609,7 +616,12 @@ async function launchSession(qs) {
 // ─── HOST WAITING ─────────────────────────────────────────────────
 function renderHostWaiting() {
   const sid=G.sessionId;
-  const url=location.origin+location.pathname+'?session='+sid;
+  // Use stored public URL if available (for local file testing)
+  const storedBase = localStorage.getItem('bq_public_url');
+  const rawBase = storedBase || (location.origin + location.pathname);
+  // Ensure single trailing slash before ?session=
+  const base = rawBase.replace(/\?.*$/, '').replace(/\/+$/, '') + '/';
+  const url = base + '?session=' + sid;
   app().innerHTML=`
   <div style="min-height:100vh;display:flex;flex-direction:column">
     <div class="hdr">
@@ -621,7 +633,20 @@ function renderHostWaiting() {
       <div class="waiting-center float-in">
         <div style="font-family:'Pacifico',cursive;color:var(--gold);font-size:1.4rem;margin-bottom:.5rem">📱 Scannez pour rejoindre !</div>
         <div class="qr-box" id="qrWrap"></div>
-        <div class="session-url">${url}</div>
+        <div class="session-url" style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:.5rem">${url}</div>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .8rem;margin-bottom:.5rem" onclick="navigator.clipboard.writeText('${url}').then(()=>alert('URL copiée !'))">📋 Copier le lien</button>
+        ${location.protocol==='file:' ? `
+          <div style='background:rgba(232,65,42,.15);border:1px solid rgba(232,65,42,.4);border-radius:12px;padding:.75rem 1rem;margin:.5rem 0;max-width:500px;text-align:left'>
+            <div style='color:#ff6b6b;font-weight:700;font-size:.85rem;margin-bottom:.4rem'>⚠️ Tu es en local — le QR code ne marchera pas sur les téléphones !</div>
+            <div style='color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:.5rem'>Ouvre cette app depuis GitHub Pages ou entre ton URL publique :</div>
+            <div style='display:flex;gap:.4rem'>
+              <input id='publicUrlIn' type='text' placeholder='https://flavien75009.github.io/TiteFifilleQuiz/' 
+                value='${localStorage.getItem("bq_public_url")||""}'  
+                style='flex:1;font-size:.8rem;padding:.4rem .6rem'>
+              <button class='btn btn-gold' style='padding:.4rem .8rem;font-size:.8rem' onclick='savePublicUrl()'>Sauver</button>
+            </div>
+          </div>` : ''}
+
         <div id="chipWrap" class="chips-wrap"></div>
         <button id="startBtn" class="btn btn-gold btn-big" style="margin-top:1.5rem" disabled onclick="startQuiz()">
           En attente de participants…
