@@ -1012,33 +1012,45 @@ async function showMiniLeaderboard(idx) {
   const worst = [...sorted].reverse().slice(0,3);
 
 
+
   function bub(p, bc) {
     if(!p) return '';
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid '+bc+';box-shadow:0 3px 12px rgba(0,0,0,.9);display:block">'
-      : '<div style="width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.7);border:3px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:24px">'+p.emoji+'</div>';
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'+ph+
-      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.72rem;padding:2px 6px;border-radius:8px;border:2px solid '+bc+';white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;line-height:1.5">'+p.name+'</div>'+
+      ? '<img src="'+p.photo+'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid '+bc+';box-shadow:0 4px 14px rgba(0,0,0,.9);display:block">'
+      : '<div style="width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.8);border:3px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 14px rgba(0,0,0,.9)">'+p.emoji+'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+ph+
+      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.68rem;padding:2px 6px;border-radius:8px;border:2px solid '+bc+';white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
       '</div>';
   }
 
+  // Gold podium: 350px wide, 262px tall, padding-top:70px
+  // bottom of 60px bubble = top of block
+  // p1 center: left=50%, top=10.6%
+  // p2 left:   left=21.2%, top=15.0%
+  // p3 right:  left=77.6%, top=16.7%
   const goodPodium =
-    '<div style="position:relative;width:100%;max-width:280px;border-radius:6px;overflow:visible;padding-top:40px">'+
+    '<div style="position:relative;width:100%;max-width:350px;padding-top:70px;border-radius:6px">'+
     '<div style="border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:21.2%;top:-30px;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:-30px;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:-20px;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
-    '</div></div>';
+    '</div>'+
+    '<div style="position:absolute;left:21.2%;top:15.0%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:10.6%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:16.7%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '</div>';
 
+  // Stone podium: 350px wide, 391px tall, padding-top:70px
+  // w0 center: left=50%,  top=7.2%
+  // w1 left:   left=18.9%, top=13.6%
+  // w2 right:  left=80.5%, top=15.7%
   const badPodium =
-    '<div style="position:relative;width:100%;max-width:280px;border-radius:6px;overflow:visible;padding-top:40px;margin-top:.5rem">'+
+    '<div style="position:relative;width:100%;max-width:350px;padding-top:70px;border-radius:6px;margin-top:.3rem">'+
     '<div style="border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:18.9%;top:-20px;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-    '<div style="position:absolute;left:50%;top:-30px;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:80.5%;top:-15px;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
-    '</div></div>';
+    '</div>'+
+    '<div style="position:absolute;left:18.9%;top:13.6%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:7.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:15.7%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '</div>';
 
   const medals = ['&#127945;','&#129352;','&#129353;'];
   let lbRows = '';
@@ -1099,33 +1111,45 @@ async function showLeaderboard(idx) {
   const worst = [...sorted].reverse().slice(0,3);
 
 
+
   function bub(p, bc) {
     if(!p) return '';
     const ph = p.photo
-      ? '<img src="'+p.photo+'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid '+bc+';box-shadow:0 3px 12px rgba(0,0,0,.9);display:block">'
-      : '<div style="width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.7);border:3px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:24px">'+p.emoji+'</div>';
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'+ph+
-      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.72rem;padding:2px 6px;border-radius:8px;border:2px solid '+bc+';white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;line-height:1.5">'+p.name+'</div>'+
+      ? '<img src="'+p.photo+'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid '+bc+';box-shadow:0 4px 14px rgba(0,0,0,.9);display:block">'
+      : '<div style="width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.8);border:3px solid '+bc+';display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 14px rgba(0,0,0,.9)">'+p.emoji+'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'+ph+
+      '<div style="background:rgba(0,0,0,.92);color:white;font-weight:800;font-size:.68rem;padding:2px 6px;border-radius:8px;border:2px solid '+bc+';white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
       '</div>';
   }
 
+  // Gold podium: 350px wide, 262px tall, padding-top:70px
+  // bottom of 60px bubble = top of block
+  // p1 center: left=50%, top=10.6%
+  // p2 left:   left=21.2%, top=15.0%
+  // p3 right:  left=77.6%, top=16.7%
   const goodPodium =
-    '<div style="position:relative;width:100%;max-width:280px;border-radius:6px;overflow:visible;padding-top:40px">'+
+    '<div style="position:relative;width:100%;max-width:350px;padding-top:70px;border-radius:6px">'+
     '<div style="border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_GOOD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:21.2%;top:-30px;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:-30px;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:-20px;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
-    '</div></div>';
+    '</div>'+
+    '<div style="position:absolute;left:21.2%;top:15.0%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:10.6%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:16.7%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '</div>';
 
+  // Stone podium: 350px wide, 391px tall, padding-top:70px
+  // w0 center: left=50%,  top=7.2%
+  // w1 left:   left=18.9%, top=13.6%
+  // w2 right:  left=80.5%, top=15.7%
   const badPodium =
-    '<div style="position:relative;width:100%;max-width:280px;border-radius:6px;overflow:visible;padding-top:40px;margin-top:.5rem">'+
+    '<div style="position:relative;width:100%;max-width:350px;padding-top:70px;border-radius:6px;margin-top:.3rem">'+
     '<div style="border-radius:6px;overflow:hidden">'+
     '<img src="'+PODIUM_BAD+'" style="width:100%;display:block">'+
-    '<div style="position:absolute;left:18.9%;top:-20px;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-    '<div style="position:absolute;left:50%;top:-30px;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:80.5%;top:-15px;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
-    '</div></div>';
+    '</div>'+
+    '<div style="position:absolute;left:18.9%;top:13.6%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:7.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:15.7%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '</div>';
 
   const medals = ['&#127945;','&#129352;','&#129353;'];
   let lbRows = '';
