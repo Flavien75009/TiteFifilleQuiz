@@ -781,8 +781,9 @@ function renderHostWaiting() {
 function startQuiz() { removeListeners(); launchQuestion(0); }
 
 function launchQuestion(idx) {
-  if(isSuperQ(idx)) { showSuperIntro(idx); }
-  else { showQuestion(idx); }
+  if(idx===29)          { showUltimeIntro(idx); }
+  else if(isSuperQ(idx)){ showSuperIntro(idx); }
+  else                  { showQuestion(idx); }
 }
 
 function showSuperIntro(idx) {
@@ -1065,9 +1066,7 @@ async function showMiniLeaderboard(idx) {
     '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.3rem;padding:.3rem;overflow:hidden">'+
     // Colonne gauche: 2 podiums
     '<div style="display:flex;flex-direction:column;gap:.1rem;overflow:hidden;align-items:center">'+
-    '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
-    '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
     badPodium+
     '</div>'+
     // Colonne droite: classement scrollable 40 lignes
@@ -1159,9 +1158,7 @@ async function showLeaderboard(idx) {
     '<span></span></div>'+
     '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.3rem;padding:.3rem;overflow:hidden">'+
     '<div style="display:flex;flex-direction:column;gap:.1rem;overflow:hidden;align-items:center">'+
-    '<div style="color:#FFD700;font-size:.58rem;font-weight:700;text-align:center">&#127942; Les Meilleurs</div>'+
     goodPodium+
-    '<div style="color:#CD853F;font-size:.58rem;font-weight:700;text-align:center">&#128293; Les Derniers</div>'+
     badPodium+
     '</div>'+
     '<div style="display:flex;flex-direction:column;overflow:hidden">'+
@@ -1183,15 +1180,39 @@ async function exportPDF() {
   const BG_COLORS = ['#E8412A','#2980E8','#F0A500','#1DA85C'];
   const LABELS = ['A','B','C','D'];
 
+  // Count correct answers per participant
+  const correctCount = {};
+  Object.keys(parts).forEach(pid => correctCount[pid] = 0);
+  qs.forEach((q,i) => {
+    const vh = history[i]||{correct:q.correct,votes:{}};
+    Object.entries(vh.votes||{}).forEach(([pid,vd])=>{
+      const ch=typeof vd==='object'?vd.choice:vd;
+      if(ch===q.correct && correctCount[pid]!==undefined) correctCount[pid]++;
+    });
+  });
+
   // Leaderboard rows
   const medals = ['🥇','🥈','🥉'];
-  const lbRows = sorted.map((p,i)=>
-    `<tr>
+  const totalQs = qs.filter(q=>q.text).length;
+  const lbRows = sorted.map((p,i)=>{
+    const pid = Object.keys(parts).find(k=>parts[k]===p)||'';
+    const correct = correctCount[pid]||0;
+    const pct = totalQs>0?Math.round(correct/totalQs*100):0;
+    return `<tr>
       <td style="text-align:center;font-size:1.1rem">${i<3?medals[i]:(i+1)}</td>
-      <td>${p.photo?`<img src="${p.photo}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;border:2px solid #FFD700">`:(p.emoji||'')} <b>${p.name}</b></td>
+      <td>${p.photo?`<img src="${p.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;border:2px solid #FFD700">`:(p.emoji||'')} <b>${p.name}</b></td>
       <td style="text-align:right;font-weight:900;color:#FFD700;font-size:1.1rem">${(p.score||0).toLocaleString()} pts</td>
-    </tr>`
-  ).join('');
+      <td style="text-align:center">
+        <span style="background:rgba(29,168,92,.2);color:#1DA85C;padding:2px 8px;border-radius:12px;font-size:.8rem;font-weight:700">✓ ${correct}/${totalQs}</span>
+      </td>
+      <td style="text-align:center">
+        <div style="background:rgba(255,255,255,.08);border-radius:20px;height:8px;width:80px;overflow:hidden;display:inline-block">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#1DA85C,#FFD700);border-radius:20px"></div>
+        </div>
+        <span style="font-size:.7rem;color:rgba(255,255,255,.6);margin-left:4px">${pct}%</span>
+      </td>
+    </tr>`;
+  }).join('');
 
   // Questions with A/B/C/D proportion bars
   let qSections = '';
@@ -1309,7 +1330,7 @@ async function exportPDF() {
 
 <div class="section">
   <h2>🏆 Classement Final</h2>
-  <table><tbody>${lbRows}</tbody></table>
+  <table><thead><tr style="border-bottom:1px solid rgba(255,215,0,.3)"><th style="padding:.3rem .5rem;color:rgba(255,215,0,.7);font-size:.75rem;text-align:center">#</th><th style="padding:.3rem .5rem;color:rgba(255,215,0,.7);font-size:.75rem">Joueur</th><th style="padding:.3rem .5rem;color:rgba(255,215,0,.7);font-size:.75rem;text-align:right">Score</th><th style="padding:.3rem .5rem;color:rgba(255,215,0,.7);font-size:.75rem;text-align:center">Bonnes rép.</th><th style="padding:.3rem .5rem;color:rgba(255,215,0,.7);font-size:.75rem;text-align:center">Taux</th></tr></thead><tbody>${lbRows}</tbody></table>
 </div>
 
 <div class="section">
