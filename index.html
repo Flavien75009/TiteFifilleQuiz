@@ -466,7 +466,7 @@ function initQs() {
   return qs.slice(0,30);
 }
 function isComplete(q) { return q.text.trim() && q.choices.every(c=>c.trim()); }
-function isSuperQ(idx)      { return (idx+1) % 10 === 0; }
+function isSuperQ(idx)      { return (idx+1) % 10 === 0 && idx !== 29; }
 function isUltimeQ(idx)     { return idx === 29; }
 function getQMultiplier(idx){ return idx===29 ? 3 : (idx+1)%10===0 ? 2 : 1; }
 function calcPts(correct, timeLeft, multiplier) {
@@ -1342,7 +1342,7 @@ async function exportPDF() {
   🎸 Merci d'avoir joué ! Joyeux anniversaire Tite Fifille ! 🎸
 </div>
 <scr`+'ipt>window.onload=()=>{setTimeout(()=>window.print(),600);}</scr'+'ipt>'+`
-</body></html>`);
+<\/body><\/html>`);
   win.document.close();
 }
 
@@ -1671,16 +1671,8 @@ function renderPEnd() {
 
 // ─── ROUTER ───────────────────────────────────────────────────────
 console.log('=== TITE FIFILLE QUIZ - VERSION FINALE - getQMultiplier:', typeof getQMultiplier);
-(function init() {
-  const p=new URLSearchParams(location.search);
-  const sid=p.get('session'), mode=p.get('mode');
-  if(sid&&mode==='host'){G.sessionId=sid;G.mode='host';G.hostQs=initQs();renderHostWaiting();}
-  else if(sid){G.sessionId=sid;G.mode='participant';renderJoin();}
-  else{renderLanding();}
-})();
-</script>
-</body>
-</htmlfunction showUltimeIntro(idx) {
+
+function showUltimeIntro(idx) {
   db.ref('sessions/'+G.sessionId+'/meta').update({status:'super_intro',currentQuestion:idx});
   app().innerHTML =
     '<div class="super-intro" style="background:radial-gradient(ellipse at center,rgba(255,50,0,.25) 0%,transparent 70%),var(--navy2);overflow:hidden;position:relative">'+
@@ -1699,6 +1691,8 @@ console.log('=== TITE FIFILLE QUIZ - VERSION FINALE - getQMultiplier:', typeof g
   // Fireworks animation
   const canvas = document.getElementById('fireworks');
   if(canvas) {
+    let fwActive = true;
+    G._fwStop = ()=>{ fwActive=false; };
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -1723,7 +1717,7 @@ console.log('=== TITE FIFILLE QUIZ - VERSION FINALE - getQMultiplier:', typeof g
         ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
         ctx.fill();
       });
-      requestAnimationFrame(drawFW);
+      if(fwActive) requestAnimationFrame(drawFW);
     }
     drawFW();
     setInterval(()=>spawnBurst(Math.random()*canvas.width, Math.random()*canvas.height*0.7),400);
@@ -1737,4 +1731,14 @@ console.log('=== TITE FIFILLE QUIZ - VERSION FINALE - getQMultiplier:', typeof g
     if(n<=0){clearInterval(iv);showQuestion(idx);}
   },1000);
 }
->
+
+(function init() {
+  const p=new URLSearchParams(location.search);
+  const sid=p.get('session'), mode=p.get('mode');
+  if(sid&&mode==='host'){G.sessionId=sid;G.mode='host';G.hostQs=initQs();renderHostWaiting();}
+  else if(sid){G.sessionId=sid;G.mode='participant';renderJoin();}
+  else{renderLanding();}
+})();
+</script>
+</body>
+</html>
