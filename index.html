@@ -799,11 +799,11 @@ function showSuperIntro(idx) {
     '</div>'+
     '<div style="color:rgba(255,255,255,.5);font-size:.9rem">Préparez-vous !</div>'+
     '</div>';
-  let n=3;
+  let n=5;
   const iv=setInterval(()=>{
     n--;
     const el=document.getElementById('sCountdown');
-    if(el){ el.textContent=n>0?n:'GO !'; el.style.color=n<=1?'#E8412A':'var(--gold)'; }
+    if(el){ el.textContent=n>0?n:'GO !'; el.style.color=n<=2?'#E8412A':'var(--gold)'; }
     if(n<=0){clearInterval(iv);showQuestion(idx);}
   },1000);
 }
@@ -1028,18 +1028,18 @@ async function showMiniLeaderboard(idx) {
   const goodPodium =
     '<div style="position:relative;width:100%;max-width:240px;padding-top:65px">'+
     '<div style="border-radius:6px;overflow:hidden"><img src="'+PODIUM_GOOD+'" style="width:100%;display:block"></div>'+
-    '<div style="position:absolute;left:21.2%;top:13.2%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:9.1%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:14.8%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:21.2%;top:21.2%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:17.1%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:22.8%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
     '</div>';
 
   // Stone 240×268px, container=333px (65px padding-top)
   const badPodium =
     '<div style="position:relative;width:100%;max-width:240px;padding-top:65px;margin-top:.2rem">'+
     '<div style="border-radius:6px;overflow:hidden"><img src="'+PODIUM_BAD+'" style="width:100%;display:block"></div>'+
-    '<div style="position:absolute;left:18.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-    '<div style="position:absolute;left:50%;top:6.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:80.5%;top:14.4%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '<div style="position:absolute;left:18.9%;top:20.3%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:14.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:22.4%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
     '</div>';
 
   const medals = ['&#127945;','&#129352;','&#129353;'];
@@ -1117,18 +1117,18 @@ async function showLeaderboard(idx) {
   const goodPodium =
     '<div style="position:relative;width:100%;max-width:240px;padding-top:65px">'+
     '<div style="border-radius:6px;overflow:hidden"><img src="'+PODIUM_GOOD+'" style="width:100%;display:block"></div>'+
-    '<div style="position:absolute;left:21.2%;top:13.2%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
-    '<div style="position:absolute;left:50%;top:9.1%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
-    '<div style="position:absolute;left:77.6%;top:14.8%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
+    '<div style="position:absolute;left:21.2%;top:21.2%;transform:translateX(-50%)">'+bub(best[1]||null,'#C0C0C0')+'</div>'+
+    '<div style="position:absolute;left:50%;top:17.1%;transform:translateX(-50%)">'+bub(best[0]||null,'#FFD700')+'</div>'+
+    '<div style="position:absolute;left:77.6%;top:22.8%;transform:translateX(-50%)">'+bub(best[2]||null,'#CD7F32')+'</div>'+
     '</div>';
 
   // Stone 240×268px, container=333px (65px padding-top)
   const badPodium =
     '<div style="position:relative;width:100%;max-width:240px;padding-top:65px;margin-top:.2rem">'+
     '<div style="border-radius:6px;overflow:hidden"><img src="'+PODIUM_BAD+'" style="width:100%;display:block"></div>'+
-    '<div style="position:absolute;left:18.9%;top:12.3%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
-    '<div style="position:absolute;left:50%;top:6.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
-    '<div style="position:absolute;left:80.5%;top:14.4%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
+    '<div style="position:absolute;left:18.9%;top:20.3%;transform:translateX(-50%)">'+bub(worst[1]||null,'#888')+'</div>'+
+    '<div style="position:absolute;left:50%;top:14.2%;transform:translateX(-50%)">'+bub(worst[0]||null,'#8B7355')+'</div>'+
+    '<div style="position:absolute;left:80.5%;top:22.4%;transform:translateX(-50%)">'+bub(worst[2]||null,'#6B5B3E')+'</div>'+
     '</div>';
 
   const medals = ['&#127945;','&#129352;','&#129353;'];
@@ -1179,53 +1179,149 @@ async function exportPDF() {
   const qs = G.hostQs;
   const parts = G.participants;
   const history = G.voteHistory;
+  const sorted = Object.values(parts).sort((a,b)=>(b.score||0)-(a.score||0));
+  const BG_COLORS = ['#E8412A','#2980E8','#F0A500','#1DA85C'];
+  const LABELS = ['A','B','C','D'];
 
-  let rows = '';
+  // Leaderboard rows
+  const medals = ['🥇','🥈','🥉'];
+  const lbRows = sorted.map((p,i)=>
+    `<tr>
+      <td style="text-align:center;font-size:1.1rem">${i<3?medals[i]:(i+1)}</td>
+      <td>${p.photo?`<img src="${p.photo}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;border:2px solid #FFD700">`:(p.emoji||'')} <b>${p.name}</b></td>
+      <td style="text-align:right;font-weight:900;color:#FFD700;font-size:1.1rem">${(p.score||0).toLocaleString()} pts</td>
+    </tr>`
+  ).join('');
+
+  // Questions with A/B/C/D proportion bars
+  let qSections = '';
   qs.forEach((q, i) => {
     if(!q.text) return;
     const vh = history[i]||{correct:q.correct,votes:{}};
     const votes = vh.votes||{};
     const correct = q.correct;
-    const rightNames=[], wrongNames=[];
+    const ultime = i===29;
+    const superQ = (i+1)%10===0;
+    const mult = ultime?3:superQ?2:1;
+
+    // Count votes per choice
+    const counts = [0,0,0,0];
     Object.entries(votes).forEach(([pid,vd])=>{
       const ch=typeof vd==='object'?vd.choice:vd;
-      const name=(parts[pid]&&parts[pid].name)||'?';
-      (ch===correct?rightNames:wrongNames).push(name);
+      if(ch>=0&&ch<=3) counts[ch]++;
     });
-    const allNames = Object.values(parts).map(p=>p.name);
-    const voted = [...rightNames,...wrongNames];
-    const noVote = allNames.filter(n=>!voted.includes(n));
-    const superQ=(i+1)%10===0;
-    rows += '<tr style="background:'+(i%2===0?'#f9f9f9':'white')+'">';
-    rows += '<td style="padding:.4rem .6rem;font-weight:700;color:#333;width:28px">'+(i+1)+(superQ?' ⭐':'')+'</td>';
-    rows += '<td style="padding:.4rem .6rem;font-weight:600">'+q.text+'</td>';
-    let ch2='';
-    q.choices.forEach((c,ci)=>{
-      const ok=ci===correct;
-      ch2+='<span style="display:inline-block;margin:.1rem;padding:.15rem .4rem;border-radius:4px;font-size:.75rem;background:'+(ok?'#1DA85C':'#eee')+';color:'+(ok?'white':'#555')+'">'+['A','B','C','D'][ci]+'. '+c+(ok?' ✓':'')+'</span>';
+    const total = counts.reduce((a,b)=>a+b,0)||1;
+
+    // Choice photo thumbnails
+    const cp = q.choicePhotos||[];
+    const allPhotos = cp.filter(Boolean).length===4;
+
+    // Build proportion bars
+    const bars = q.choices.map((c,ci)=>{
+      const pct = Math.round(counts[ci]/total*100);
+      const ok = ci===correct;
+      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+        <div style="width:22px;height:22px;border-radius:50%;background:${BG_COLORS[ci]};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:.75rem;flex-shrink:0">${LABELS[ci]}</div>
+        ${cp[ci]?`<img src="${cp[ci]}" style="height:22px;width:22px;object-fit:cover;border-radius:4px;flex-shrink:0">`:''}
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:18px;overflow:hidden;border:${ok?'2px solid #1DA85C':'1px solid rgba(255,255,255,.1)'}">
+          <div style="width:${pct}%;height:100%;background:${ok?'#1DA85C':BG_COLORS[ci]};border-radius:20px;min-width:${pct>0?'18px':'0'}"></div>
+        </div>
+        <div style="color:${ok?'#1DA85C':'rgba(255,255,255,.6)'};font-size:.7rem;min-width:36px;text-align:right">${pct}% (${counts[ci]})</div>
+      </div>`;
+    }).join('');
+
+    // Voter photos per choice
+    const rightPids=[], wrongPids=[];
+    Object.entries(votes).forEach(([pid,vd])=>{
+      const ch=typeof vd==='object'?vd.choice:vd;
+      (ch===correct?rightPids:wrongPids).push(pid);
     });
-    rows += '<td style="padding:.4rem .6rem">'+ch2+'</td>';
-    rows += '<td style="padding:.4rem .6rem;color:#1DA85C;font-size:.8rem">'+rightNames.join(', ')+'</td>';
-    rows += '<td style="padding:.4rem .6rem;color:#E8412A;font-size:.8rem">'+wrongNames.join(', ')+(noVote.length?'<br><em style="color:#999">Absent: '+noVote.join(', ')+'</em>':'')+'</td>';
-    rows += '</tr>';
+    const voterAv = pids => pids.slice(0,6).map(pid=>{
+      const p=parts[pid]; if(!p) return '';
+      return p.photo?`<img src="${p.photo}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid white;margin-left:-4px">`:
+        `<span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.2);align-items:center;justify-content:center;font-size:.65rem;margin-left:-4px">${p.emoji||'?'}</span>`;
+    }).join('');
+
+    // Question photo
+    const qPhoto = (q.photos&&q.photos.length&&!allPhotos)
+      ? `<div style="margin:.4rem 0">${q.photos.map(p=>`<img src="${p}" style="max-height:100px;max-width:160px;object-fit:contain;border-radius:8px;margin-right:4px">`).join('')}</div>`
+      : '';
+
+    const borderColor = ultime?'#FF6B35':superQ?'#FFD700':'rgba(255,255,255,.15)';
+    const badgeColor  = ultime?'linear-gradient(135deg,#FF4500,#FF0000)':superQ?'linear-gradient(135deg,#FFD700,#FFA500)':'rgba(255,255,255,.1)';
+
+    qSections += `
+      <div style="background:rgba(255,255,255,.04);border:1px solid ${borderColor};border-radius:12px;padding:.75rem;margin-bottom:.6rem;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
+          <span style="background:${badgeColor};color:${ultime||superQ?'white':'rgba(255,255,255,.7)'};font-weight:800;padding:2px 8px;border-radius:12px;font-size:.72rem">
+            ${i+1}${ultime?' 🔥×3':superQ?' ⭐×2':''}
+          </span>
+          <span style="color:white;font-weight:700;font-size:.85rem">${q.text}</span>
+        </div>
+        ${qPhoto}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .5rem">${bars}</div>
+        <div style="margin-top:.4rem;display:flex;gap:.75rem;flex-wrap:wrap;font-size:.65rem">
+          ${rightPids.length?`<span style="color:#1DA85C">✓ ${rightPids.length} bon(s) : <span style="display:inline-flex;margin-left:2px">${voterAv(rightPids)}</span></span>`:''}
+          ${wrongPids.length?`<span style="color:#E8412A">✗ ${wrongPids.length} faux : <span style="display:inline-flex;margin-left:2px">${voterAv(wrongPids)}</span></span>`:''}
+        </div>
+      </div>`;
   });
 
-  const sorted=Object.values(parts).sort((a,b)=>(b.score||0)-(a.score||0));
-  const lbRows=sorted.map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+p.name+'</td><td style="text-align:right;font-weight:700">'+(p.score||0).toLocaleString()+' pts</td></tr>').join('');
+  // Participant strip
+  const partStrip = sorted.map(p=>p.photo
+    ? `<img src="${p.photo}" title="${p.name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:3px solid #FFD700;margin:2px">`
+    : `<span title="${p.name}" style="display:inline-flex;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid #FFD700;align-items:center;justify-content:center;font-size:1.3rem;margin:2px">${p.emoji||'?'}</span>`
+  ).join('');
 
-  const win=window.open('','_blank');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bilan Quiz Tite Fifille</title>'+
-    '<style>body{font-family:Arial,sans-serif;margin:2rem;color:#222}h1{color:#9C27B0}h2{color:#555;margin:1.5rem 0 .5rem}table{width:100%;border-collapse:collapse;font-size:.85rem}th{background:#9C27B0;color:white;padding:.4rem .6rem;text-align:left}td{border-bottom:1px solid #eee;vertical-align:top;padding:.3rem .5rem}@media print{body{margin:.5rem}}</style>'+
-    '</head><body>'+
-    '<h1>&#127928; Bilan — Connaissez-vous vraiment Tite Fifille ?</h1>'+
-    '<p style="color:#666;font-size:.85rem">Export&#233; le '+new Date().toLocaleDateString('fr-FR')+' — '+qs.filter(q=>q.text).length+' questions — '+sorted.length+' participants</p>'+
-    '<h2>&#128202; Classement final</h2>'+
-    '<table><thead><tr><th>#</th><th>Nom</th><th>Score</th></tr></thead><tbody>'+lbRows+'</tbody></table>'+
-    '<h2>&#128203; D&#233;tail des questions</h2>'+
-    '<table><thead><tr><th>N&#176;</th><th>Question</th><th>R&#233;ponses</th><th>&#10003; Bonne</th><th>&#10007; Faux</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-    '<p style="color:#999;font-size:.75rem;margin-top:1rem">&#11088; = Super Question (points doubl&#233;s)</p>'+
-    '<scr'+'ipt>window.onload=()=>window.print();</scr'+'ipt>'+
-    '</body></html>');
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Souvenir - Tite Fifille Quiz</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#1a0a2e; color:white; font-family:'Segoe UI',Arial,sans-serif; }
+  .cover { background:linear-gradient(135deg,#2a0a4e,#4a1070,#8B008B); padding:3rem 2rem; text-align:center; position:relative; overflow:hidden; }
+  .cover::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%,rgba(255,215,0,.15),transparent 60%); }
+  .cover h1 { font-size:2.2rem; color:#FFD700; text-shadow:0 2px 20px rgba(255,215,0,.5); position:relative; }
+  .cover p  { color:rgba(255,255,255,.7); margin-top:.4rem; position:relative; }
+  .section { padding:1.5rem 2rem; }
+  h2 { color:#FFD700; font-size:1.1rem; margin-bottom:.75rem; padding-bottom:.3rem; border-bottom:1px solid rgba(255,215,0,.3); }
+  table { width:100%; border-collapse:collapse; }
+  tr:nth-child(even) td { background:rgba(255,255,255,.04); }
+  td { padding:.35rem .6rem; vertical-align:middle; color:white; border-bottom:1px solid rgba(255,255,255,.06); }
+  .photos-strip { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin:1rem 0; }
+  @media print {
+    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .no-break { page-break-inside:avoid; }
+  }
+</style>
+</head><body>
+<div class="cover">
+  <div style="font-size:3rem;margin-bottom:.5rem">🎂</div>
+  <h1>Connaissez-vous vraiment<br>Tite Fifille ?</h1>
+  <p>Quiz du ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</p>
+  <p style="margin-top:.2rem">${qs.filter(q=>q.text).length} questions — ${sorted.length} participants</p>
+</div>
+
+<div class="section">
+  <h2>🎉 Les Participants</h2>
+  <div class="photos-strip">${partStrip}</div>
+</div>
+
+<div class="section">
+  <h2>🏆 Classement Final</h2>
+  <table><tbody>${lbRows}</tbody></table>
+</div>
+
+<div class="section">
+  <h2>📋 Questions & Résultats</h2>
+  ${qSections}
+</div>
+
+<div style="text-align:center;padding:1.5rem;color:rgba(255,255,255,.4);font-style:italic">
+  🎸 Merci d'avoir joué ! Joyeux anniversaire Tite Fifille ! 🎸
+</div>
+<scr`+'ipt>window.onload=()=>{setTimeout(()=>window.print(),600);}</scr'+'ipt>'+`
+</body></html>`);
   win.document.close();
 }
 
@@ -1563,4 +1659,61 @@ console.log('=== TITE FIFILLE QUIZ - VERSION FINALE - getQMultiplier:', typeof g
 })();
 </script>
 </body>
-</html>
+</htmlfunction showUltimeIntro(idx) {
+  db.ref('sessions/'+G.sessionId+'/meta').update({status:'super_intro',currentQuestion:idx});
+  app().innerHTML =
+    '<div class="super-intro" style="background:radial-gradient(ellipse at center,rgba(255,50,0,.25) 0%,transparent 70%),var(--navy2);overflow:hidden;position:relative">'+
+    '<canvas id="fireworks" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>'+
+    '<div class="super-badge" style="background:linear-gradient(135deg,#FF4500,#FF0000);font-size:1.2rem;z-index:2;position:relative">&#128293;&#128293; TRIPLE POINTS &#128293;&#128293;</div>'+
+    '<div class="super-title" style="font-size:3rem;color:#FF6B35;z-index:2;position:relative;text-shadow:0 0 30px rgba(255,100,0,.8)">SUPER SUPER<br>QUESTION !</div>'+
+    '<div class="super-subtitle" style="z-index:2;position:relative">Question 30 — Les points sont TRIPLÉS !</div>'+
+    '<div class="super-photos" style="z-index:2;position:relative">'+
+    '<img src="'+PHOTO_SUPER+'" alt="" style="width:140px;height:140px">'+
+    '<div class="super-countdown" id="sCountdown" style="font-size:5rem;color:#FF6B35">10</div>'+
+    '<img src="'+PHOTO_SUPER+'" alt="" style="width:140px;height:140px">'+
+    '</div>'+
+    '<div style="color:rgba(255,255,255,.7);z-index:2;position:relative;font-size:1.1rem">&#127775; La dernière question — tout se joue ICI ! &#127775;</div>'+
+    '</div>';
+
+  // Fireworks animation
+  const canvas = document.getElementById('fireworks');
+  if(canvas) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = [];
+    const colors = ['#FF6B35','#FFD700','#FF4500','#FF1493','#00BFFF','#7FFF00','#FF69B4'];
+    function spawnBurst(x, y) {
+      const c = colors[Math.floor(Math.random()*colors.length)];
+      for(let i=0;i<60;i++) {
+        const angle = Math.random()*Math.PI*2;
+        const speed = 2+Math.random()*6;
+        particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-2,alpha:1,color:c,r:2+Math.random()*3});
+      }
+    }
+    function drawFW() {
+      ctx.fillStyle='rgba(0,0,0,.15)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      particles.forEach((p,i)=>{
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.alpha-=0.018;
+        if(p.alpha<=0){particles.splice(i,1);return;}
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
+        ctx.fill();
+      });
+      requestAnimationFrame(drawFW);
+    }
+    drawFW();
+    setInterval(()=>spawnBurst(Math.random()*canvas.width, Math.random()*canvas.height*0.7),400);
+  }
+
+  let n=10;
+  const iv=setInterval(()=>{
+    n--;
+    const el=document.getElementById('sCountdown');
+    if(el){ el.textContent=n>0?n:'GO !'; el.style.color=n<=3?'#FF4500':'#FF6B35'; el.style.transform=n<=3?'scale(1.3)':'scale(1)'; }
+    if(n<=0){clearInterval(iv);showQuestion(idx);}
+  },1000);
+}
+>
