@@ -961,8 +961,11 @@ async function closeVotes(idx) {
   let photoHtml='';
   const allChoicePhotos=(q.choicePhotos||[]).filter(Boolean).length===4;
   if(q.photos&&q.photos.length&&!allChoicePhotos){
-    photoHtml='<div class="photos-row" style="max-height:140px">'+
-      q.photos.map(p=>'<img src="'+p+'" style="flex:1;min-width:0;max-height:135px;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.3)">').join('')+
+    const longText = q.text.length > 55 || q.choices.some(c=>c.length>22);
+    const veryLong = q.text.length > 90 || q.choices.some(c=>c.length>35);
+    const photoH = veryLong ? 110 : longText ? 160 : 220;
+    photoHtml='<div class="photos-row" style="max-height:'+photoH+'px">'+
+      q.photos.map(p=>'<img src="'+p+'" style="flex:1;min-width:0;max-height:'+(photoH-5)+'px;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.3)">').join('')+
       '</div>';
   }
 
